@@ -22,14 +22,22 @@ function App() {
     pillar: 'Build Log'
   });
 
-  // Initialize Supabase client with proper validation
-  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-  const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-  
-  // Only create Supabase client if both URL and key are valid
-  const supabase = supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== ''
-    ? createClient(supabaseUrl, supabaseKey)
-    : null;
+  // Initialize Supabase client function
+  const getSupabaseClient = () => {
+    const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+    const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+    
+    // Only create Supabase client if both URL and key are valid
+    if (supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== '') {
+      try {
+        return createClient(supabaseUrl, supabaseKey);
+      } catch (error) {
+        console.error('Error creating Supabase client:', error);
+        return null;
+      }
+    }
+    return null;
+  };
 
   // Initialize Gemini AI
   const initializeAI = () => {
@@ -47,6 +55,7 @@ function App() {
   const loadSeeds = async () => {
     setIsLoading(true);
     try {
+      const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
           .from('seeds')
@@ -86,6 +95,7 @@ function App() {
 
   const saveSeedToSupabase = async (seedData) => {
     try {
+      const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
           .from('seeds')
@@ -120,6 +130,7 @@ function App() {
 
   const saveArticleToSupabase = async (articleData) => {
     try {
+      const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
           .from('articles')
