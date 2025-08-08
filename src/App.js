@@ -204,6 +204,9 @@ function App() {
 
   const saveArticleToSupabase = async (articleData) => {
     try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) throw new Error('User not authenticated');
+
       const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
@@ -214,7 +217,8 @@ function App() {
             content: generatedContent,
             pillar: selectedSeed.pillar,
             questions: pillarQuestions,
-            answers: answers
+            answers: answers,
+            user_id: currentUser.id
           }])
           .select()
           .single();
