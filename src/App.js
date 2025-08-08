@@ -482,36 +482,42 @@ What would you tell someone else facing this?
 
       const prompt = `Role & Purpose
 You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
-Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
-
-Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
-Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
 
 Story Seed: "${seed.content}"
 Pillar: "${seed.pillar}"
 
-Generate 3–4 title options that are:
-- Specific enough to promise value
-- Intriguing without giving the full answer
-- Styled for Substack performance (curiosity + clarity)
-- Variations: metaphor anchor, tension question, "The Day…", "Why I…"
+TITLE GENERATION RULES:
 
-Create authentic, conversational titles that sound like real human experiences. Avoid corporate speak or marketing jargon.
+1. Always include a hook + clear topic
+2. Make the reader know exactly what they will read about before they click
+3. Avoid generic phrases like "showing up every day" or "what I learned" without context
+4. Use one of four formats: "The Day…", "Why I…", tension question, or metaphor anchor
+5. Keep under 16 words
+6. Promise specificity: include the project, challenge, or context in the title
+7. Optimize for Substack browsing: the reader should instantly understand it's an AI/leadership build story, not a generic self-help post
 
-Examples of good Substack titles:
-- "The day I realized our AI wasn't actually intelligent"
-- "Why I stopped trying to understand machine learning"
-- "Three meetings that changed how I think about AI"
-- "I thought I hired an AI expert. I was wrong."
+REQUIRED FORMATS (use one for each title):
+- **"The Day…" format**: "The day our AI chatbot started giving financial advice"
+- **"Why I…" format**: "Why I stopped trusting our AI recommendations after one bad call"
+- **Tension question**: "What happens when your AI tool makes a $10k mistake?"
+- **Metaphor anchor**: "Building AI is like teaching a toddler to drive"
 
-Generate 3 titles now, just the titles, no explanations:`;
+EXAMPLES OF GOOD TITLES:
+- "The day I realized our AI wasn't actually intelligent" (12 words)
+- "Why I fired our entire AI consulting team" (8 words)
+- "What happens when ChatGPT runs your marketing campaign?" (8 words)
+- "Our AI hiring tool was more biased than humans" (9 words)
+
+Generate exactly 3 titles using different formats. Each must be under 16 words and include the specific project/challenge from the seed.
+
+Return only the titles, no explanations:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
       const text = response.text();
 
       const titles = text.split('\n').filter(line =>
-        line.trim() && !line.includes('Title') && line.match(/^\d+\.|\-|\*/)
+        line.trim() && !line.includes('Title') && line.match(/^\d+\.|\-\s|\*\s/)
       ).map(title =>
         title.replace(/^\d+\.\s*|\-\s*|\*\s*/, '').trim()
       );
@@ -606,7 +612,7 @@ Please assemble the full draft using the Inkridge Article Skeleton in this order
 3. Scene & Stakes (1–2 paragraphs describing where I was, what was happening, why it mattered)
 4. The Challenge (Focus on one main point of tension or uncertainty)
 5. The Action (What I did, why, and what options I considered)
-6. The Outcome (What happened next — success, failure, or in progress)
+6. The Outcome (What happened as a result? Did it go as expected?)
 7. The Insight (1 short paragraph with the leadership/AI adoption lesson)
 8. The Invitation (1–2 sentences inviting reflection or action)
 
@@ -1226,7 +1232,7 @@ Write the complete article now:`;
               <h2 className="text-lg font-semibold text-gray-900">Notes & Templates</h2>
               <p className="text-sm text-gray-600">Store your prompts, templates, and reference materials</p>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Filter */}
               <select
@@ -1239,7 +1245,7 @@ Write the complete article now:`;
                 <option value="prompt">Prompts</option>
                 <option value="reference">Reference</option>
               </select>
-              
+
               <button
                 onClick={() => setCurrentView('add-note')}
                 className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
@@ -1293,7 +1299,7 @@ Write the complete article now:`;
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 mb-3">
                     <span className={`text-xs px-2 py-1 rounded ${
                       note.type === 'template' ? 'bg-blue-100 text-blue-800' :
