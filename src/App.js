@@ -293,119 +293,174 @@ function App() {
 
   // Generate titles using Gemini
   const generateTitles = async (seed) => {
-    const model = initializeAI();
-    if (!model) return [];
+    if (!apiKey) return;
 
     setIsGenerating(true);
     try {
-      const prompt = `Based on this story seed: "${seed.content}"
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-Content Pillar: ${seed.pillar}
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article that blends immersive storytelling with applicable leadership/AI insights.
 
-Generate 3 compelling, click-worthy titles for a Substack post. Make them:
-- Authentic and vulnerable
-- Specific to the AI/leadership context
-- Between 6-12 words
-- Engaging without being clickbait
+Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
+Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
 
-Return only the 3 titles, one per line, no numbers or bullets.`;
+Based on this seed story:
+Title: ${seed.title}
+Content: ${seed.content}
+Pillar: ${seed.pillar}
+
+Generate 3 curiosity-driven article titles in one of these formats:
+- "The Day..." (specific moment)
+- "Why I..." (decision/belief)
+- Tension Question (creates curiosity)
+- Metaphor Anchor (compelling comparison)
+
+Make them specific, intriguing, and rooted in the actual experience described.`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const titles = response.text().split('\n').filter(title => title.trim());
+      const response = result.response;
+      const text = response.text();
+
+      const titles = text.split('\n').filter(line =>
+        line.trim() && !line.includes('Title') && line.match(/^\d+\.|\-|\*/)
+      ).map(title =>
+        title.replace(/^\d+\.\s*|\-\s*|\*\s*/, '').trim()
+      );
 
       setGeneratedTitles(titles);
-      return titles;
     } catch (error) {
       console.error('Error generating titles:', error);
-      return [];
-    } finally {
-      setIsGenerating(false);
     }
+    setIsGenerating(false);
   };
 
   // Generate pillar-specific questions
   const generateQuestions = async (pillar, title, seed) => {
-    const model = initializeAI();
-    if (!model) return [];
+    if (!apiKey) return;
 
     setIsGenerating(true);
     try {
-      const pillarPrompts = {
-        'Build Log': 'Focus on technical challenges, solutions found, and practical lessons learned.',
-        'Leadership Lens': 'Focus on team dynamics, decision-making, and organizational impact.',
-        'Meta-Skill': 'Focus on universal skills, mindset shifts, and transferable insights.',
-        'Field Note': 'Focus on observations, patterns, and emerging trends.'
-      };
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      const prompt = `For a ${pillar} post titled "${title}" based on this seed: "${seed.content}"
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
 
-${pillarPrompts[pillar]}
+For the article titled "${title}" based on this seed:
+${seed.content}
+Pillar: ${pillar}
 
-Generate 5 specific questions that will help the author develop this into a compelling 600-800 word Substack post. Questions should:
-- Draw out concrete details and examples
-- Encourage vulnerability and authenticity
-- Help connect to broader leadership/AI themes
-- Build a narrative arc
+Your task is to generate 8-10 strategic questions that align with the Inkridge Article Skeleton:
 
-Return only the 5 questions, one per line, no numbers.`;
+Core Questions (always include these 5):
+1. Scene setting: "Where were you, and what was happening?"
+2. The challenge: "What was the problem or turning point?"
+3. The action: "What did you try, and what options did you consider?"
+4. The outcome: "What happened as a result — good, bad, or unexpected?"
+5. The insight: "What's the lesson or realisation you'd share with another leader?"
+
+Additional Questions (3-5 more) that dig deeper into:
+- Stakes and why it mattered
+- Emotional state and uncertainty
+- Alternative paths considered
+- Broader implications for AI adoption
+- Specific details that bring the story to life
+
+Make questions conversational, specific to the seed content, and designed to extract authentic, lived experiences. Focus on the "messy middle" - the uncertainty, vulnerability, and real decision-making process.`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const questions = response.text().split('\n').filter(q => q.trim());
+      const response = result.response;
+      const text = response.text();
+
+      const questions = text.split('\n').filter(line =>
+        line.trim() && line.includes('?')
+      ).map(q => q.replace(/^\d+\.\s*|\-\s*|\*\s*/, '').trim());
 
       setPillarQuestions(questions);
-      return questions;
     } catch (error) {
       console.error('Error generating questions:', error);
-      return [];
-    } finally {
-      setIsGenerating(false);
     }
+    setIsGenerating(false);
   };
 
   // Generate complete article
   const generateArticle = async () => {
-    const model = initializeAI();
-    if (!model) return '';
+    if (!apiKey) return;
+
+    const selectedAnswers = Object.entries(selectedQuestions)
+      .filter(([_, selected]) => selected)
+      .map(([question, _]) => `Q: ${question}\nA: ${answers[question] || 'Not answered'}`)
+      .join('\n\n');
+
+    if (!selectedAnswers) return;
 
     setIsGenerating(true);
     try {
-      const answersText = Object.entries(answers)
-        .filter(([question]) => selectedQuestions[question]) // Only include answers for selected questions
-        .map(([question, answer]) => `Q: ${question}\nA: ${answer}`)
-        .join('\n\n');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      const prompt = `Write a compelling 600-800 word Substack post with this information:
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article that blends immersive storytelling with applicable leadership/AI insights.
+You must always use the Inkridge Article Skeleton structure and the user's own words as much as possible — no fabricating details.
 
-Title: ${selectedTitle}
-Content Pillar: ${selectedSeed.pillar}
-Original Seed: ${selectedSeed.content}
+Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
+Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply. Keep paragraphs short (2–4 sentences). Bold 1–2 key lines the reader should remember.
 
-Author's responses to key questions:
-${answersText}
+Inkridge Article Skeleton:
+[Title] – "${selectedTitle}"
+Hook & First Line – one sentence that drops the reader into the moment.
+Scene & Stakes – 1–2 short paragraphs describing where, what, and why it matters. End with what's at stake.
+The Challenge – 1–2 paragraphs focusing on one tension or uncertainty. Be honest about indecision or risk.
+The Action – 1–2 paragraphs showing what the user did, why, and alternatives considered.
+The Outcome – 1–2 paragraphs summarising what happened next (success, failure, or in progress).
+The Insight – 1 short paragraph zooming out to the leadership or AI lesson, framed so the reader can apply it.
+The Invitation – 1–2 sentences inviting reflection or action from the reader.
 
-Write in a conversational, authentic tone that:
-- Starts with a hook that draws readers in
-- Shares vulnerable, real moments
-- Provides actionable insights
-- Connects AI/tech topics to broader leadership themes
-- Ends with a thought-provoking question for engagement
+Use these Q&A responses to craft the narrative:
+${selectedAnswers}
 
-Format as clean markdown ready for Substack.`;
+Formatting Rules:
+- Bold 1–2 key lines
+- Keep paragraphs to 2–4 sentences
+- Target length: 500–800 words
+- No jargon unless explained in plain language
+- Maintain warm, reflective tone with slight raw honesty
+- Use the person's actual words and experiences from their answers`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const content = response.text();
+      const response = result.response;
+      const text = response.text();
 
-      setGeneratedContent(content);
-      return content;
+      setGeneratedContent(text);
+
+      // Save article to Supabase
+      const { error } = await supabase
+        .from('articles')
+        .insert({
+          seed_id: selectedSeed.id,
+          title: selectedTitle,
+          content: text,
+          pillar: selectedSeed.pillar,
+          questions: pillarQuestions,
+          answers: answers,
+          user_id: user.id
+        });
+
+      if (error) {
+        console.error('Error saving article:', error);
+      } else {
+        // Refresh articles list
+        loadArticles(); // Corrected function call
+      }
+
     } catch (error) {
       console.error('Error generating article:', error);
-      return '';
-    } finally {
-      setIsGenerating(false);
     }
+    setIsGenerating(false);
   };
 
   // Save new seed
