@@ -298,7 +298,7 @@ function App() {
     setIsGenerating(true);
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       const prompt = `Role & Purpose
 You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
@@ -344,7 +344,7 @@ Make them specific, intriguing, and rooted in the actual experience described.`;
     setIsGenerating(true);
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       const prompt = `Role & Purpose
 You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
@@ -400,7 +400,7 @@ Make questions conversational, specific to the seed content, and designed to ext
     setIsGenerating(true);
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       const prompt = `Role & Purpose
 You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
