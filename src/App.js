@@ -1,8 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
+
+// Global variable to hold the Supabase client instance
+let supabaseClientInstance = null;
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -25,13 +27,18 @@ function App() {
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
+    if (supabaseClientInstance) {
+      return supabaseClientInstance;
+    }
+
     const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
     const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-    
+
     // Only create Supabase client if both URL and key are valid
     if (supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== '') {
       try {
-        return createClient(supabaseUrl, supabaseKey);
+        supabaseClientInstance = createClient(supabaseUrl, supabaseKey);
+        return supabaseClientInstance;
       } catch (error) {
         console.error('Error creating Supabase client:', error);
         return null;
@@ -231,7 +238,7 @@ function App() {
     setIsGenerating(true);
     try {
       const prompt = `Based on this story seed: "${seed.content}"
-      
+
 Content Pillar: ${seed.pillar}
 
 Generate 3 compelling, click-worthy titles for a Substack post. Make them:
@@ -245,7 +252,7 @@ Return only the 3 titles, one per line, no numbers or bullets.`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const titles = response.text().split('\n').filter(title => title.trim());
-      
+
       setGeneratedTitles(titles);
       return titles;
     } catch (error) {
@@ -285,7 +292,7 @@ Return only the 5 questions, one per line, no numbers.`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const questions = response.text().split('\n').filter(q => q.trim());
-      
+
       setPillarQuestions(questions);
       return questions;
     } catch (error) {
@@ -328,7 +335,7 @@ Format as clean markdown ready for Substack.`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const content = response.text();
-      
+
       setGeneratedContent(content);
       return content;
     } catch (error) {
@@ -343,7 +350,7 @@ Format as clean markdown ready for Substack.`;
   const saveSeed = async (e) => {
     e.preventDefault();
     if (!newSeed.title.trim() || !newSeed.content.trim()) return;
-    
+
     setIsLoading(true);
     try {
       const savedSeed = await saveSeedToSupabase({
@@ -351,7 +358,7 @@ Format as clean markdown ready for Substack.`;
         content: newSeed.content.trim(),
         pillar: newSeed.pillar
       });
-      
+
       setSeeds(prev => [savedSeed, ...prev]);
       setNewSeed({ title: '', content: '', pillar: 'Build Log' });
       setCurrentView('dashboard');
@@ -386,7 +393,7 @@ Format as clean markdown ready for Substack.`;
             <Sprout className="w-8 h-8 text-purple-600" />
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -396,7 +403,7 @@ Format as clean markdown ready for Substack.`;
             <BarChart3 className="w-8 h-8 text-green-600" />
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -428,8 +435,8 @@ Format as clean markdown ready for Substack.`;
           ) : (
             <div className="space-y-4">
               {seeds.map((seed) => (
-                <div 
-                  key={seed.id} 
+                <div
+                  key={seed.id}
                   className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => {
                     setSelectedSeed(seed);
@@ -482,7 +489,7 @@ Format as clean markdown ready for Substack.`;
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Story Seed
@@ -496,12 +503,12 @@ Format as clean markdown ready for Substack.`;
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Content Pillar
             </label>
-            <select 
+            <select
               value={newSeed.pillar}
               onChange={(e) => setNewSeed(prev => ({ ...prev, pillar: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -512,7 +519,7 @@ Format as clean markdown ready for Substack.`;
               <option value="Field Note">Field Note</option>
             </select>
           </div>
-          
+
           <div className="flex space-x-3">
             <button
               type="submit"
@@ -545,9 +552,9 @@ Format as clean markdown ready for Substack.`;
           <p className="text-yellow-700 mb-4">Add your Gemini API key in Secrets to enable AI co-writing.</p>
           <div className="flex space-x-3">
             <span className="text-sm text-yellow-600">Secret Key: REACT_APP_GEMINI_API_KEY</span>
-            <a 
-              href="https://aistudio.google.com/app/apikey" 
-              target="_blank" 
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
               rel="noopener noreferrer"
               className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
             >
@@ -575,7 +582,7 @@ Format as clean markdown ready for Substack.`;
           ) : (
             <div className="grid gap-4">
               {seeds.map((seed) => (
-                <div 
+                <div
                   key={seed.id}
                   className="border rounded-lg p-4 hover:bg-purple-50 cursor-pointer transition-colors"
                   onClick={() => setSelectedSeed(seed)}
@@ -802,7 +809,7 @@ Format as clean markdown ready for Substack.`;
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Inkridge</h1>
             <p className="text-gray-600 mb-6">
-              Your Creative Workflow Companion for documenting your AI journey. 
+              Your Creative Workflow Companion for documenting your AI journey.
               Sign in with your Replit account to save your story seeds and generated content.
             </p>
             <button
@@ -831,7 +838,7 @@ Format as clean markdown ready for Substack.`;
               <h1 className="text-xl font-bold text-purple-600">Inkridge</h1>
               <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
             </div>
-            
+
             {/* User Info */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -846,7 +853,7 @@ Format as clean markdown ready for Substack.`;
                 </button>
               </div>
             </div>
-            
+
             <nav className="flex space-x-8">
               <button
                 onClick={() => setCurrentView('dashboard')}
@@ -859,7 +866,7 @@ Format as clean markdown ready for Substack.`;
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Dashboard
               </button>
-              
+
               <button
                 onClick={() => setCurrentView('capture')}
                 className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
@@ -871,7 +878,7 @@ Format as clean markdown ready for Substack.`;
                 <Plus className="w-4 h-4 mr-2" />
                 Capture Seeds
               </button>
-              
+
               <button
                 onClick={() => setCurrentView('cowriter')}
                 className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
