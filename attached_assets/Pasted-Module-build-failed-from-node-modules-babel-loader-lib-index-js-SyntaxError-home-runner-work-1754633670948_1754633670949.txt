@@ -1,0 +1,60 @@
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /home/runner/workspace/src/App.js: Identifier 'expandedArticle' has already been declared. (860:9)
+
+[0m [90m 858 |[39m   )[33m;[39m
+ [90m 859 |[39m
+[31m[1m>[22m[39m[90m 860 |[39m   [36mconst[39m [expandedArticle[33m,[39m setExpandedArticle] [33m=[39m useState([36mnull[39m)[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m
+ [90m 861 |[39m
+ [90m 862 |[39m   [36mconst[39m renderArticles [33m=[39m () [33m=>[39m (
+ [90m 863 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"space-y-6"[39m[33m>[39m[0m
+    at constructor (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:6627:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:1644:19)
+    at FlowScopeHandler.declareName (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:1610:12)
+    at FlowScopeHandler.declareName (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:1711:11)
+    at FlowParserMixin.declareNameFromIdentifier (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:7591:16)
+    at FlowParserMixin.checkIdentifier (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:7587:12)
+    at FlowParserMixin.checkLVal (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:7526:12)
+    at FlowParserMixin.checkLVal (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:7564:16)
+    at FlowParserMixin.parseVarId (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13412:10)
+    at FlowParserMixin.parseVarId (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:3504:11)
+    at FlowParserMixin.parseVar (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13383:12)
+    at FlowParserMixin.parseVarStatement (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13230:10)
+    at FlowParserMixin.parseStatementContent (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12851:23)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12767:17)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2946:24)
+    at FlowParserMixin.parseStatementListItem (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12747:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13316:61)
+    at FlowParserMixin.parseBlockBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13309:10)
+    at FlowParserMixin.parseBlock (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13297:10)
+    at FlowParserMixin.parseFunctionBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12101:24)
+    at FlowParserMixin.parseFunctionBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2923:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12087:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2931:18)
+    at /home/runner/workspace/node_modules/@babel/parser/lib/index.js:13445:12
+    at FlowParserMixin.withSmartMixTopicForbiddingContext (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12404:14)
+    at FlowParserMixin.parseFunction (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13444:10)
+    at FlowParserMixin.parseFunctionStatement (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13125:17)
+    at FlowParserMixin.parseStatementContent (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12791:21)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12767:17)
+    at FlowParserMixin.parseStatementLike (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2946:24)
+    at FlowParserMixin.parseModuleItem (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12744:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13316:36)
+    at FlowParserMixin.parseBlockBody (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:13309:10)
+    at FlowParserMixin.parseProgram (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12625:10)
+    at FlowParserMixin.parseTopLevel (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:12615:25)
+    at FlowParserMixin.parseTopLevel (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:3715:28)
+    at FlowParserMixin.parse (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:14492:10)
+    at parse (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:14526:38)
+    at parser (/home/runner/workspace/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next ()
+    at normalizeFile (/home/runner/workspace/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next ()
+    at run (/home/runner/workspace/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next ()
+    at transform (/home/runner/workspace/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next ()
+    at step (/home/runner/workspace/node_modules/gensync/index.js:261:32)
+    at /home/runner/workspace/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
