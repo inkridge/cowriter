@@ -47,6 +47,7 @@ function App() {
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
@@ -1483,23 +1484,41 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
       )}
 
       {/* Sidebar */}
-      <div className={`sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`sidebar fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:static lg:inset-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      } ${
+        sidebarCollapsed ? 'lg:w-16 w-16' : 'lg:w-64 w-64'
+      } lg:translate-x-0`}></div>
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between h-16 px-6 border-b">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-purple-600 cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+              <h1 className={`text-xl font-bold text-purple-600 cursor-pointer transition-opacity duration-300 ${
+                sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+              }`} onClick={() => setCurrentView('dashboard')}>
                 Inkridge
               </h1>
+              {sidebarCollapsed && (
+                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+                  <span className="text-white text-sm font-bold">I</span>
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:block p-2 rounded-md hover:bg-gray-100"
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -1514,9 +1533,12 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   ? 'bg-purple-100 text-purple-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
+              title={sidebarCollapsed ? 'Dashboard' : ''}
             >
-              <BarChart3 className="w-5 h-5 mr-3" />
-              Dashboard
+              <BarChart3 className="w-5 h-5 mr-3 flex-shrink-0" />
+              <span className={`transition-opacity duration-300 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Dashboard
+              </span>
             </button>
 
             <button
@@ -1529,9 +1551,12 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   ? 'bg-purple-100 text-purple-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
+              title={sidebarCollapsed ? 'Capture Seeds' : ''}
             >
-              <Plus className="w-5 h-5 mr-3" />
-              Capture Seeds
+              <Plus className="w-5 h-5 mr-3 flex-shrink-0" />
+              <span className={`transition-opacity duration-300 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Capture Seeds
+              </span>
             </button>
 
             <button
@@ -1544,9 +1569,12 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   ? 'bg-purple-100 text-purple-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
+              title={sidebarCollapsed ? 'Co-Writer' : ''}
             >
-              <PenTool className="w-5 h-5 mr-3" />
-              Co-Writer
+              <PenTool className="w-5 h-5 mr-3 flex-shrink-0" />
+              <span className={`transition-opacity duration-300 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Co-Writer
+              </span>
             </button>
 
             <button
@@ -1559,9 +1587,12 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   ? 'bg-purple-100 text-purple-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
+              title={sidebarCollapsed ? 'Notes' : ''}
             >
-              <FileText className="w-5 h-5 mr-3" />
-              Notes
+              <FileText className="w-5 h-5 mr-3 flex-shrink-0" />
+              <span className={`transition-opacity duration-300 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Notes
+              </span>
             </button>
 
             <button
@@ -1574,15 +1605,22 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   ? 'bg-purple-100 text-purple-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
+              title={sidebarCollapsed ? 'Articles' : ''}
             >
-              <BookOpen className="w-5 h-5 mr-3" />
-              Articles
+              <BookOpen className="w-5 h-5 mr-3 flex-shrink-0" />
+              <span className={`transition-opacity duration-300 ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Articles
+              </span>
             </button>
           </nav>
 
           {/* Sidebar Footer */}
           <div className="px-4 py-4 border-t">
-            <p className="text-xs text-gray-500 text-center">Creative Workflow Companion</p>
+            <p className={`text-xs text-gray-500 text-center transition-opacity duration-300 ${
+              sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+            }`}>
+              Creative Workflow Companion
+            </p>
           </div>
         </div>
       </div>
