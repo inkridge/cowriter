@@ -22,11 +22,12 @@ function App() {
     pillar: 'Build Log'
   });
 
-  // Initialize Supabase client with fallback
+  // Initialize Supabase client with proper validation
   const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
   const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
   
-  const supabase = supabaseUrl && supabaseKey 
+  // Only create Supabase client if both URL and key are valid
+  const supabase = supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== ''
     ? createClient(supabaseUrl, supabaseKey)
     : null;
 
