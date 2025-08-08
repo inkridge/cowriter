@@ -480,43 +480,19 @@ What would you tell someone else facing this?
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Generate 5 Substack-ready titles for this seed:
+      const prompt = `Generate 5 compelling Substack titles for this story seed:
+
 Seed: "${seed.content}"
 Pillar: "${seed.pillar}"
 
-MANDATORY REQUIREMENTS:
+Requirements:
+- Reference specific details from the seed content
+- Use one of these formats per title: "The Day...", "Why I...", question, transformation, or metaphor
+- Keep under 16 words
+- Make the AI/leadership context immediately clear
+- Avoid generic business phrases
 
-1. Every title MUST directly reference the seed's core topic — use exact keywords or clear synonyms from the seed content.
-
-2. Use EXACTLY one of these 5 formats (one title per format):
-   - "The Day..." (specific moment format)
-   - "Why I..." (personal reasoning format)  
-   - Tension question (starts with "How/What/Can/Should...")
-   - Transformation statement ("From X to Y" or "X Became Y")
-   - Metaphor anchor (concrete comparison or analogy)
-
-3. Be hyper-specific:
-   - Name the exact transformation, tool, moment, or decision from the seed
-   - Include concrete nouns (app, tool, system, project name, etc.)
-   - Reference the actual outcome or change mentioned
-
-4. Keep under 16 words maximum.
-
-5. FORBIDDEN phrases (never use):
-   "daily grind", "hard path", "leadership journey", "marathon", "momentum", "engine", "showing up every day", "what I learned", "the process", "my experience"
-
-6. Make it instantly clear this is an AI/leadership build story, not generic business advice.
-
-7. Each title must pass the "Substack feed test" — reader knows exactly what they'll get before clicking.
-
-EXAMPLE for seed "What took me over the edge from non-tech CEO to app builder":
-1. The Day a Weekend AI Experiment Turned Me Into an App Builder
-2. Why a Single AI Project Pushed This Non-Tech CEO Into Coding  
-3. Can a Non-Tech CEO Build an App? Here's How I Crossed the Line
-4. From CEO to App Builder in 90 Days — The Push I Didn't See Coming
-5. The Tipping Point That Made Me Go From Talking About AI to Building It
-
-Return format: A numbered list of exactly 5 titles, each using a different format from the list above.`;
+Return 5 numbered titles.`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -544,28 +520,21 @@ Return format: A numbered list of exactly 5 titles, each using a different forma
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
-Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
+      const prompt = `Create 7 development questions for this story:
 
-Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
-Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
+Seed: "${seed.content}"
+Title: "${title}"
 
-Story Seed: "${seed.content}"
-Selected Title: "${title}"
+Generate one specific question for each section:
+1. Hook - What vivid detail opens this moment?
+2. Scene - Where were you and why did this matter?
+3. Challenge - What was the key problem or decision?
+4. Action - What did you do and what were your options?
+5. Outcome - What happened? Did it work as expected?
+6. Insight - What lesson can other leaders apply?
+7. Invitation - What question can you leave readers with?
 
-I need you to generate questions for the Inkridge Article Skeleton sections. For each section, provide ONE clear, conversational question that will help me gather the right content.
-
-Sections to ask about:
-1. Hook & First Line - What's the first vivid detail, thought, or feeling from that moment?
-2. Scene & Stakes - Where were you and what was happening around you? Why did this moment matter?
-3. The Challenge - What was the exact problem or decision point in that moment?
-4. The Action - What steps did you take, and what alternatives were on the table?
-5. The Outcome - What happened as a result? Did it go as expected?
-6. The Insight - What's the one lesson or realisation another leader could apply from this?
-7. The Invitation - What's one reflective question or challenge you can leave the reader with?
-
-Format your response as exactly 7 questions, one for each section, numbered 1-7. Make them specific to my story seed and conversational.`;
+Return 7 numbered questions tailored to this specific story.`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -598,39 +567,25 @@ Format your response as exactly 7 questions, one for each section, numbered 1-7.
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
-Your job is to take these answers and create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
-
-Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
-Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply. Keep paragraphs short (2–4 sentences). Bold 1–2 key lines the reader should remember.
-Formatting goal: Short, scannable, emotionally resonant — optimized for Substack's email audience.
+      const prompt = `Write a 500-800 word Substack article for non-technical leaders.
 
 Title: "${selectedTitle}"
 
-My Answers to the Skeleton Questions:
+My Story Details:
 ${selectedAnswers}
 
-Please assemble the full draft using the Inkridge Article Skeleton in this order:
+Structure:
+1. Hook (compelling opening line)
+2. Scene (where/why this mattered)
+3. Challenge (the key problem)
+4. Action (what I did)
+5. Outcome (what happened)
+6. Insight (leadership lesson)
+7. Invitation (reader reflection)
 
-1. Title
-2. Hook & First Line (One sentence that drops the reader into the moment)
-3. Scene & Stakes (1–2 paragraphs describing where I was, what was happening, why it mattered)
-4. The Challenge (Focus on one main point of tension or uncertainty)
-5. The Action (What I did, why, and what options I considered)
-6. The Outcome (What happened as a result? Did it go as expected?)
-7. The Insight (1 short paragraph with the leadership/AI adoption lesson)
-8. The Invitation (1–2 sentences inviting reflection or action)
+Style: Conversational, honest, short paragraphs (2-4 sentences). Bold 1-2 key insights. No jargon.
 
-Formatting Rules:
-- Keep paragraphs 2–4 sentences
-- Bold 1–2 key lines that readers should remember
-- Length: 500–800 words
-- Avoid jargon unless explained in plain language
-- Maintain warm, reflective tone with slight raw honesty
-- Use my actual words and experiences from the answers above
-
-Write the complete article now:`;
+Write the complete article:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
