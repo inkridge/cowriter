@@ -26,6 +26,7 @@ function App() {
     pillar: 'Build Log'
   });
   const [expandedArticle, setExpandedArticle] = useState(null);
+  const [showActionMenu, setShowActionMenu] = useState(false);
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
@@ -511,7 +512,7 @@ Format as clean markdown ready for Substack.`;
                           {seed.pillar}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {new Date(seed.created_at || seed.date).toLocaleDateString()}
+                          {new Date(seed.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -800,18 +801,8 @@ Format as clean markdown ready for Substack.`;
       {/* Generated Content */}
       {generatedContent && (
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Your Substack Article</h2>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(generatedContent);
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
-            >
-              Copy to Clipboard
-            </button>
-          </div>
-          <div className="prose max-w-none bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
+          <h2 className="text-xl font-semibold text-gray-900">Your Substack Article</h2>
+          <div className="prose max-w-none bg-gray-50 rounded-lg p-4 mt-4 mb-6 max-h-96 overflow-y-auto">
             <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
               {generatedContent}
             </pre>
@@ -1067,6 +1058,49 @@ Format as clean markdown ready for Substack.`;
         {currentView === 'cowriter' && renderCoWriter()}
         {currentView === 'articles' && renderArticles()}
       </main>
+
+      {/* Floating Action Button */}
+      {currentView === 'dashboard' && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <button
+            onClick={() => setShowActionMenu(!showActionMenu)}
+            className="w-16 h-16 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 transition-colors"
+          >
+            <Plus className="w-8 h-8" />
+          </button>
+
+          {showActionMenu && (
+            <div className="absolute bottom-20 right-0 space-y-4">
+              <button
+                onClick={() => {
+                  setCurrentView('capture');
+                  setShowActionMenu(false);
+                }}
+                className="flex items-center p-3 rounded-lg bg-white shadow-md hover:bg-gray-100 transition-colors"
+              >
+                <Plus className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-gray-800 font-medium">Capture Seeds</span>
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSeed(null);
+                  setGeneratedTitles([]);
+                  setSelectedTitle('');
+                  setPillarQuestions([]);
+                  setAnswers({});
+                  setGeneratedContent('');
+                  setCurrentView('cowriter');
+                  setShowActionMenu(false);
+                }}
+                className="flex items-center p-3 rounded-lg bg-white shadow-md hover:bg-gray-100 transition-colors"
+              >
+                <PenTool className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-gray-800 font-medium">Co-Writer</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
