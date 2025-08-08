@@ -1,0 +1,72 @@
+{
+  "short_name": "Inkridge",
+  "name": "Inkridge - Creative Workflow Companion",
+  "description": "Transform your AI journey into compelling Substack content with guided co-writing",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#7c3aed",
+  "background_color": "#f9fafb",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "writing", "business"],
+  "lang": "en-US",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Capture Seed",
+      "short_name": "Capture",
+      "description": "Quickly capture a new story seed",
+      "url": "/?action=capture",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Co-Writer",
+      "short_name": "Write",
+      "description": "Start the AI co-writing process",
+      "url": "/?action=cowriter",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Inkridge Dashboard"
+    },
+    {
+      "src": "screenshot-narrow.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Inkridge Mobile"
+    }
+  ]
+}
