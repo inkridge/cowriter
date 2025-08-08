@@ -30,6 +30,7 @@ function App() {
     tags: ''
   });
   const [expandedNote, setExpandedNote] = useState(null);
+  const [noteModal, setNoteModal] = useState(null);
   const [noteFilter, setNoteFilter] = useState('all');
   const [editingNote, setEditingNote] = useState(null);
   const [editNote, setEditNote] = useState({
@@ -1301,17 +1302,11 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                     </span>
                   </div>
 
-                  <div className={`prose max-w-none ${expandedNote === note.id ? '' : 'max-h-32'} overflow-hidden`}>
+                  <div className="prose max-w-none max-h-32 overflow-hidden">
                     <div className="text-sm text-gray-600 whitespace-pre-wrap">
-                      {expandedNote === note.id ? (
-                        note.content
-                      ) : (
-                        <>
-                          {note.content.substring(0, 200)}
-                          {note.content.length > 200 && (
-                            <span className="text-gray-400">...</span>
-                          )}
-                        </>
+                      {note.content.substring(0, 200)}
+                      {note.content.length > 200 && (
+                        <span className="text-gray-400">...</span>
                       )}
                     </div>
                   </div>
@@ -1333,10 +1328,10 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   <div className="mt-4 flex flex-wrap gap-2">
                     {note.content.length > 200 && (
                       <button
-                        onClick={() => setExpandedNote(expandedNote === note.id ? null : note.id)}
+                        onClick={() => setNoteModal(note)}
                         className="text-purple-600 hover:text-purple-800 text-sm font-medium"
                       >
-                        {expandedNote === note.id ? 'Show Less' : 'Read More'}
+                        Read More
                       </button>
                     )}
                     <button
@@ -1679,6 +1674,74 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Note Modal */}
+      {noteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">{noteModal.title}</h2>
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      noteModal.type === 'template' ? 'bg-blue-100 text-blue-800' :
+                      noteModal.type === 'prompt' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {noteModal.type}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(noteModal.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setNoteModal(null)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl ml-4"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="prose max-w-none mb-6">
+                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {noteModal.content}
+                </div>
+              </div>
+
+              {noteModal.tags && (
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {noteModal.tags.split(',').map((tag, index) => (
+                    <span
+                      key={index}
+                      className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center"
+                    >
+                      <Tag className="w-3 h-3 mr-1" />
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => navigator.clipboard.writeText(noteModal.content)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Copy Content
+                </button>
+                <button
+                  onClick={() => setNoteModal(null)}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
