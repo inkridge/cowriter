@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@supabase/supabase-js';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -13,12 +14,19 @@ function App() {
   const [answers, setAnswers] = useState({});
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
     pillar: 'Build Log'
   });
+
+  // Initialize Supabase client
+  const supabase = createClient(
+    process.env.REACT_APP_SUPABASE_URL || '',
+    process.env.REACT_APP_SUPABASE_ANON_KEY || ''
+  );
 
   // Initialize Gemini AI
   const initializeAI = () => {
@@ -28,6 +36,96 @@ function App() {
       return genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
     } catch (error) {
       console.error('Error initializing Gemini:', error);
+      return null;
+    }
+  };
+
+  // Supabase functions
+  const loadSeeds = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('seeds')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSeeds(data || []);
+    } catch (error) {
+      console.error('Error loading seeds:', error);
+      // Fallback to sample data if Supabase fails
+      setSeeds([
+        {
+          id: 1,
+          title: "AI replaced my workflow",
+          content: "Discovered how ChatGPT automated my daily standup prep",
+          pillar: "Build Log",
+          created_at: new Date().toISOString(),
+          status: "captured"
+        },
+        {
+          id: 2,
+          title: "Leadership through AI adoption",
+          content: "Team was resistant to AI tools until I showed real results",
+          pillar: "Leadership Lens",
+          created_at: new Date().toISOString(),
+          status: "captured"
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveSeedToSupabase = async (seedData) => {
+    try {
+      const { data, error } = await supabase
+        .from('seeds')
+        .insert([{
+          title: seedData.title,
+          content: seedData.content,
+          pillar: seedData.pillar,
+          status: 'captured'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving seed:', error);
+      // Fallback to local storage
+      const seed = {
+        id: Date.now(),
+        title: seedData.title,
+        content: seedData.content,
+        pillar: seedData.pillar,
+        created_at: new Date().toISOString(),
+        status: 'captured'
+      };
+      return seed;
+    }
+  };
+
+  const saveArticleToSupabase = async (articleData) => {
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .insert([{
+          seed_id: selectedSeed.id,
+          title: selectedTitle,
+          content: generatedContent,
+          pillar: selectedSeed.pillar,
+          questions: pillarQuestions,
+          answers: answers
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving article:', error);
       return null;
     }
   };
@@ -149,44 +247,31 @@ Format as clean markdown ready for Substack.`;
   };
 
   // Save new seed
-  const saveSeed = (e) => {
+  const saveSeed = async (e) => {
     e.preventDefault();
     if (!newSeed.title.trim() || !newSeed.content.trim()) return;
     
-    const seed = {
-      id: Date.now(),
-      title: newSeed.title.trim(),
-      content: newSeed.content.trim(),
-      pillar: newSeed.pillar,
-      date: new Date().toISOString(),
-      status: "captured"
-    };
-    
-    setSeeds(prev => [seed, ...prev]);
-    setNewSeed({ title: '', content: '', pillar: 'Build Log' });
-    setCurrentView('dashboard');
+    setIsLoading(true);
+    try {
+      const savedSeed = await saveSeedToSupabase({
+        title: newSeed.title.trim(),
+        content: newSeed.content.trim(),
+        pillar: newSeed.pillar
+      });
+      
+      setSeeds(prev => [savedSeed, ...prev]);
+      setNewSeed({ title: '', content: '', pillar: 'Build Log' });
+      setCurrentView('dashboard');
+    } catch (error) {
+      console.error('Error saving seed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Sample data for demonstration
+  // Load seeds from Supabase on app start
   useEffect(() => {
-    setSeeds([
-      {
-        id: 1,
-        title: "AI replaced my workflow",
-        content: "Discovered how ChatGPT automated my daily standup prep",
-        pillar: "Build Log",
-        date: new Date().toISOString(),
-        status: "captured"
-      },
-      {
-        id: 2,
-        title: "Leadership through AI adoption",
-        content: "Team was resistant to AI tools until I showed real results",
-        pillar: "Leadership Lens",
-        date: new Date().toISOString(),
-        status: "captured"
-      }
-    ]);
+    loadSeeds();
   }, []);
 
   const renderDashboard = () => (
@@ -260,7 +345,7 @@ Format as clean markdown ready for Substack.`;
                           {seed.pillar}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {new Date(seed.date).toLocaleDateString()}
+                          {new Date(seed.created_at || seed.date).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -566,6 +651,20 @@ Format as clean markdown ready for Substack.`;
             </pre>
           </div>
           <div className="mt-6 flex space-x-3">
+            <button
+              onClick={async () => {
+                await saveArticleToSupabase();
+                setSelectedSeed(null);
+                setGeneratedTitles([]);
+                setSelectedTitle('');
+                setPillarQuestions([]);
+                setAnswers({});
+                setGeneratedContent('');
+              }}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Save & Start New Article
+            </button>
             <button
               onClick={() => {
                 setSelectedSeed(null);
