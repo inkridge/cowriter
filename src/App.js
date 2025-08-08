@@ -300,25 +300,24 @@ function App() {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
-Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article that blends immersive storytelling with applicable leadership/AI insights.
+      const prompt = `I need help creating article titles for a story about: "${seed.content}"
 
-Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
-Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
+Write 3 compelling titles that sound natural and human. Avoid corporate speak, buzzwords, or overly dramatic language. 
 
-Based on this seed story:
-Title: ${seed.title}
-Content: ${seed.content}
-Pillar: ${seed.pillar}
+Make them:
+- Conversational (like you'd tell a friend)
+- Specific to the actual experience
+- Intriguing but not clickbait-y
+- Something a real person would actually say
 
-Generate 3 curiosity-driven article titles in one of these formats:
-- "The Day..." (specific moment)
-- "Why I..." (decision/belief)
-- Tension Question (creates curiosity)
-- Metaphor Anchor (compelling comparison)
+Don't use phrases like "curiosity-driven" or "grab attention" or marketing speak. Just write titles that feel authentic and interesting.
 
-Make them specific, intriguing, and rooted in the actual experience described.`;
+Examples of good style:
+- "I accidentally became our company's AI person"
+- "Three hours and one broken app later..."
+- "Turns out I'm not as tech-savvy as I thought"
+
+Create 3 titles now, just the titles, no explanations:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -346,30 +345,26 @@ Make them specific, intriguing, and rooted in the actual experience described.`;
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+      const prompt = `I'm writing about: "${title}"
+Based on this experience: ${seed.content}
 
-For the article titled "${title}" based on this seed:
-${seed.content}
-Pillar: ${pillar}
+Help me flesh out this story by asking me questions that will help me remember the details and think through what happened.
 
-Your task is to generate 8-10 strategic questions that align with the Inkridge Article Skeleton:
+Ask me 8-10 questions like you're a curious friend who wants to understand what really went down. Make them:
+- Natural and conversational
+- Specific to my actual situation
+- Focused on the real human experience (emotions, mistakes, surprises)
+- Not too formal or interview-like
 
-Core Questions (always include these 5):
-1. Scene setting: "Where were you, and what was happening?"
-2. The challenge: "What was the problem or turning point?"
-3. The action: "What did you try, and what options did you consider?"
-4. The outcome: "What happened as a result — good, bad, or unexpected?"
-5. The insight: "What's the lesson or realisation you'd share with another leader?"
+Include questions about:
+- What was actually happening when this started?
+- What went wrong or felt uncertain?
+- What did I try to do about it?
+- How did it turn out?
+- What would I tell someone else who faces this?
+- The messy, human details that made it real
 
-Additional Questions (3-5 more) that dig deeper into:
-- Stakes and why it mattered
-- Emotional state and uncertainty
-- Alternative paths considered
-- Broader implications for AI adoption
-- Specific details that bring the story to life
-
-Make questions conversational, specific to the seed content, and designed to extract authentic, lived experiences. Focus on the "messy middle" - the uncertainty, vulnerability, and real decision-making process.`;
+Just list the questions, no explanations or categories:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -402,34 +397,28 @@ Make questions conversational, specific to the seed content, and designed to ext
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
-Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article that blends immersive storytelling with applicable leadership/AI insights.
-You must always use the Inkridge Article Skeleton structure and the user's own words as much as possible — no fabricating details.
+      const prompt = `Write a 500-800 word article titled "${selectedTitle}" using these answers I gave:
 
-Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
-Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply. Keep paragraphs short (2–4 sentences). Bold 1–2 key lines the reader should remember.
-
-Inkridge Article Skeleton:
-[Title] – "${selectedTitle}"
-Hook & First Line – one sentence that drops the reader into the moment.
-Scene & Stakes – 1–2 short paragraphs describing where, what, and why it matters. End with what's at stake.
-The Challenge – 1–2 paragraphs focusing on one tension or uncertainty. Be honest about indecision or risk.
-The Action – 1–2 paragraphs showing what the user did, why, and alternatives considered.
-The Outcome – 1–2 paragraphs summarising what happened next (success, failure, or in progress).
-The Insight – 1 short paragraph zooming out to the leadership or AI lesson, framed so the reader can apply it.
-The Invitation – 1–2 sentences inviting reflection or action from the reader.
-
-Use these Q&A responses to craft the narrative:
 ${selectedAnswers}
 
-Formatting Rules:
-- Bold 1–2 key lines
-- Keep paragraphs to 2–4 sentences
-- Target length: 500–800 words
-- No jargon unless explained in plain language
-- Maintain warm, reflective tone with slight raw honesty
-- Use the person's actual words and experiences from their answers`;
+Write it like a real person telling their story - conversational, honest, not overly polished. Use my actual words and experiences from the answers above.
+
+Structure it naturally:
+1. Start with a moment that drops people into the story
+2. Set up what was happening and why it mattered  
+3. Explain the challenge or uncertainty I faced
+4. Share what I actually did about it
+5. Tell what happened as a result
+6. End with what I learned that might help others
+
+Keep it:
+- Conversational (like I'm talking to a colleague over coffee)
+- Short paragraphs (2-3 sentences each)
+- Honest about mistakes and uncertainty
+- Focused on the human experience, not just the tech
+- Bold one key insight that readers should remember
+
+Don't make it sound like marketing copy or a business case study. Just tell the story like a real person would.`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
