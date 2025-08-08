@@ -25,7 +25,6 @@ function App() {
     content: '',
     pillar: 'Build Log'
   });
-  const [expandedArticle, setExpandedArticle] = useState(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
 
   // Initialize Supabase client function
@@ -983,19 +982,20 @@ Format as clean markdown ready for Substack.`;
               <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
             </div>
 
-            {/* User Info */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
-                <span>Hi, {user.name}!</span>
-                <button
-                  onClick={logout}
-                  className="ml-2 text-purple-600 hover:text-purple-800"
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+            {/* User Profile */}
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
               </div>
+              <button
+                onClick={logout}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
 
             <nav className="flex space-x-8">
