@@ -20,6 +20,7 @@ function App() {
   const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
   const [user, setUser] = useState(null);
   const [articles, setArticles] = useState([]);
+  const [expandedArticle, setExpandedArticle] = useState(null);
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
