@@ -53,15 +53,57 @@ function App() {
   };
 
   // Auth functions
-  const checkAuth = () => {
-    const userId = window.parent?.document?.querySelector('script[id="replit-user-id"]')?.textContent;
-    const userName = window.parent?.document?.querySelector('script[id="replit-user-name"]')?.textContent;
-    
-    if (userId && userName) {
-      setUser({ id: userId, name: userName });
-      return { id: userId, name: userName };
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/__replauthuser');
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.id) {
+          const user = { id: userData.id, name: userData.name };
+          setUser(user);
+          return user;
+        }
+      }
+    } catch (error) {
+      console.log('Not authenticated yet');
     }
     return null;
+  };
+
+  const loginWithReplit = () => {
+    window.addEventListener("message", authComplete);
+    var h = 500;
+    var w = 350;
+    var left = screen.width / 2 - w / 2;
+    var top = screen.height / 2 - h / 2;
+
+    var authWindow = window.open(
+      "https://replit.com/auth_with_repl_site?domain=" + location.host,
+      "_blank",
+      "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
+        w +
+        ", height=" +
+        h +
+        ", top=" +
+        top +
+        ", left=" +
+        left
+    );
+
+    function authComplete(e) {
+      if (e.data !== "auth_complete") {
+        return;
+      }
+
+      window.removeEventListener("message", authComplete);
+      authWindow.close();
+      checkAuth(); // Refresh user data after login
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setSeeds([]);
   };
 
   // Supabase functions
@@ -322,9 +364,7 @@ Format as clean markdown ready for Substack.`;
 
   // Load seeds from Supabase on app start
   useEffect(() => {
-    const currentUser = checkAuth();
-    setUser(currentUser);
-    loadSeeds();
+    checkAuth();
   }, []);
 
   // Reload seeds when user changes
@@ -751,6 +791,36 @@ Format as clean markdown ready for Substack.`;
     </div>
   );
 
+  // Show login page if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-white rounded-lg shadow-sm border p-8">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <PenTool className="w-8 h-8 text-purple-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Inkridge</h1>
+            <p className="text-gray-600 mb-6">
+              Your Creative Workflow Companion for documenting your AI journey. 
+              Sign in with your Replit account to save your story seeds and generated content.
+            </p>
+            <button
+              onClick={loginWithReplit}
+              className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
+            >
+              <User className="w-5 h-5 mr-2" />
+              Log in with Replit
+            </button>
+            <p className="text-xs text-gray-500 mt-4">
+              We use Replit Auth to securely authenticate your account. Your data is stored safely and only accessible to you.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -764,16 +834,17 @@ Format as clean markdown ready for Substack.`;
             
             {/* User Info */}
             <div className="flex items-center space-x-4">
-              {user ? (
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <User className="w-4 h-4" />
-                  <span>Hi, {user.name}!</span>
-                </div>
-              ) : (
-                <div className="text-sm text-gray-600">
-                  Please log in to save your data
-                </div>
-              )}
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <User className="w-4 h-4" />
+                <span>Hi, {user.name}!</span>
+                <button
+                  onClick={logout}
+                  className="ml-2 text-purple-600 hover:text-purple-800"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             
             <nav className="flex space-x-8">
