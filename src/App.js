@@ -516,7 +516,7 @@ Create 3 titles now, just the titles, no explanations:`;
     setIsGenerating(false);
   };
 
-  // Generate pillar-specific questions
+  // Generate pillar-specific questions using Inkridge Article Skeleton
   const generateQuestions = async (pillar, title, seed) => {
     if (!apiKey) return;
 
@@ -525,34 +525,36 @@ Create 3 titles now, just the titles, no explanations:`;
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `I'm writing about: "${title}"
-Based on this experience: ${seed.content}
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
 
-Help me flesh out this story by asking me questions that will help me remember the details and think through what happened.
+Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
+Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
 
-Ask me 8-10 questions like you're a curious friend who wants to understand what really went down. Make them:
-- Natural and conversational
-- Specific to my actual situation
-- Focused on the real human experience (emotions, mistakes, surprises)
-- Not too formal or interview-like
+Story Seed: "${seed.content}"
+Selected Title: "${title}"
 
-Include questions about:
-- What was actually happening when this started?
-- What went wrong or felt uncertain?
-- What did I try to do about it?
-- How did it turn out?
-- What would I tell someone else who faces this?
-- The messy, human details that made it real
+I need you to generate questions for the Inkridge Article Skeleton sections. For each section, provide ONE clear, conversational question that will help me gather the right content.
 
-Just list the questions, no explanations or categories:`;
+Sections to ask about:
+1. Hook & First Line - What's the first vivid detail, thought, or feeling from that moment?
+2. Scene & Stakes - Where were you and what was happening around you? Why did this moment matter?
+3. The Challenge - What was the exact problem or decision point in that moment?
+4. The Action - What steps did you take, and what alternatives were on the table?
+5. The Outcome - What happened as a result? Did it go as expected?
+6. The Insight - What's the one lesson or realisation another leader could apply from this?
+7. The Invitation - What's one reflective question or challenge you can leave the reader with?
+
+Format your response as exactly 7 questions, one for each section, numbered 1-7. Make them specific to my story seed and conversational.`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
       const text = response.text();
 
       const questions = text.split('\n').filter(line =>
-        line.trim() && line.includes('?')
-      ).map(q => q.replace(/^\d+\.\s*|\-\s*|\*\s*/, '').trim());
+        line.trim() && line.includes('?') && /^\d+\./.test(line.trim())
+      ).map(q => q.replace(/^\d+\.\s*/, '').trim());
 
       setPillarQuestions(questions);
     } catch (error) {
@@ -561,7 +563,7 @@ Just list the questions, no explanations or categories:`;
     setIsGenerating(false);
   };
 
-  // Generate complete article
+  // Generate complete article using Inkridge Article Skeleton
   const generateArticle = async () => {
     if (!apiKey) return;
 
@@ -577,28 +579,39 @@ Just list the questions, no explanations or categories:`;
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Write a 500-800 word article titled "${selectedTitle}" using these answers I gave:
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+Your job is to take these answers and create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
 
+Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
+Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply. Keep paragraphs short (2–4 sentences). Bold 1–2 key lines the reader should remember.
+Formatting goal: Short, scannable, emotionally resonant — optimized for Substack's email audience.
+
+Title: "${selectedTitle}"
+
+My Answers to the Skeleton Questions:
 ${selectedAnswers}
 
-Write it like a real person telling their story - conversational, honest, not overly polished. Use my actual words and experiences from the answers above.
+Please assemble the full draft using the Inkridge Article Skeleton in this order:
 
-Structure it naturally:
-1. Start with a moment that drops people into the story
-2. Set up what was happening and why it mattered  
-3. Explain the challenge or uncertainty I faced
-4. Share what I actually did about it
-5. Tell what happened as a result
-6. End with what I learned that might help others
+1. Title
+2. Hook & First Line (One sentence that drops the reader into the moment)
+3. Scene & Stakes (1–2 paragraphs describing where I was, what was happening, why it mattered)
+4. The Challenge (Focus on one main point of tension or uncertainty)
+5. The Action (What I did, why, and what options I considered)
+6. The Outcome (What happened next — success, failure, or in progress)
+7. The Insight (1 short paragraph with the leadership/AI adoption lesson)
+8. The Invitation (1–2 sentences inviting reflection or action)
 
-Keep it:
-- Conversational (like I'm talking to a colleague over coffee)
-- Short paragraphs (2-3 sentences each)
-- Honest about mistakes and uncertainty
-- Focused on the human experience, not just the tech
-- Bold one key insight that readers should remember
+Formatting Rules:
+- Keep paragraphs 2–4 sentences
+- Bold 1–2 key lines that readers should remember
+- Length: 500–800 words
+- Avoid jargon unless explained in plain language
+- Maintain warm, reflective tone with slight raw honesty
+- Use my actual words and experiences from the answers above
 
-Don't make it sound like marketing copy or a business case study. Just tell the story like a real person would.`;
+Write the complete article now:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
@@ -607,24 +620,7 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
       setGeneratedContent(text);
 
       // Save article to Supabase
-      const { error } = await supabase
-        .from('articles')
-        .insert({
-          seed_id: selectedSeed.id,
-          title: selectedTitle,
-          content: text,
-          pillar: selectedSeed.pillar,
-          questions: pillarQuestions,
-          answers: answers,
-          user_id: user.id
-        });
-
-      if (error) {
-        console.error('Error saving article:', error);
-      } else {
-        // Refresh articles list
-        loadArticles(); // Corrected function call
-      }
+      await saveArticleToSupabase();
 
     } catch (error) {
       console.error('Error generating article:', error);
