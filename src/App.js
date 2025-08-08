@@ -417,8 +417,7 @@ Format as clean markdown ready for Substack.`;
             Generate Different Titles
           </button>
         </div>
-      )}</div>
-    </div>
+      )}
 
       {/* Question Generation */}
       {selectedTitle && pillarQuestions.length === 0 && (
