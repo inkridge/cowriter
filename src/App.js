@@ -33,6 +33,13 @@ function App() {
 
     const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
     const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+    
+    console.log('Environment check:', {
+      url: supabaseUrl || 'UNDEFINED',
+      urlLength: supabaseUrl ? supabaseUrl.length : 0,
+      key: supabaseKey ? 'SET' : 'UNDEFINED',
+      keyLength: supabaseKey ? supabaseKey.length : 0
+    });
 
     // Only create Supabase client if both URL and key are valid
     if (supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== '') {
@@ -207,29 +214,46 @@ function App() {
       const currentUser = user || await checkAuth();
       if (!currentUser) throw new Error('User not authenticated');
 
+      console.log('Attempting to save article for user:', currentUser.id);
+      console.log('Environment variables:', {
+        supabaseUrl: process.env.REACT_APP_SUPABASE_URL ? 'SET' : 'NOT SET',
+        supabaseKey: process.env.REACT_APP_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET'
+      });
+
       const supabase = getSupabaseClient();
       if (supabase) {
+        const articleData = {
+          seed_id: selectedSeed.id,
+          title: selectedTitle,
+          content: generatedContent,
+          pillar: selectedSeed.pillar,
+          questions: pillarQuestions,
+          answers: answers,
+          user_id: currentUser.id
+        };
+
+        console.log('Saving article data:', articleData);
+
         const { data, error } = await supabase
           .from('articles')
-          .insert([{
-            seed_id: selectedSeed.id,
-            title: selectedTitle,
-            content: generatedContent,
-            pillar: selectedSeed.pillar,
-            questions: pillarQuestions,
-            answers: answers,
-            user_id: currentUser.id
-          }])
+          .insert([articleData])
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Article saved successfully:', data);
+        alert('Article saved successfully!');
         return data;
       } else {
-        throw new Error('Supabase not configured');
+        throw new Error('Supabase not configured - environment variables missing');
       }
     } catch (error) {
       console.error('Error saving article:', error);
+      alert(`Failed to save article: ${error.message}`);
       return null;
     }
   };
