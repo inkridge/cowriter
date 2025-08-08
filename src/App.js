@@ -823,13 +823,14 @@ Format as clean markdown ready for Substack.`;
               </button>
               <button
                 onClick={() => {
-                  setPillarQuestions([]);
                   setSelectedQuestions({});
                   setAnswers({});
+                  generateQuestions(selectedSeed.pillar, selectedTitle, selectedSeed);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={isGenerating}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                Try Different Questions
+                {isGenerating ? 'Generating...' : 'Try Different Questions'}
               </button>
             </div>
           </div>
