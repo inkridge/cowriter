@@ -25,6 +25,7 @@ function App() {
     content: '',
     pillar: 'Build Log'
   });
+  const [expandedArticle, setExpandedArticle] = useState(null);
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
@@ -856,6 +857,8 @@ Format as clean markdown ready for Substack.`;
     </div>
   );
 
+  const [expandedArticle, setExpandedArticle] = useState(null);
+
   const renderArticles = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border">
@@ -900,19 +903,36 @@ Format as clean markdown ready for Substack.`;
                   </div>
                   
                   <div className="prose max-w-none">
-                    <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-700">
-                        {article.content.substring(0, 500)}...
-                      </pre>
+                    <div className={`bg-gray-50 rounded-lg p-4 ${expandedArticle === article.id ? '' : 'max-h-64'} overflow-y-auto`}>
+                      <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-700">
+                        {expandedArticle === article.id ? (
+                          article.content
+                        ) : (
+                          <>
+                            {article.content.substring(0, 500)}
+                            {article.content.length > 500 && (
+                              <span className="text-gray-500">...</span>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="mt-4 flex space-x-3">
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {article.content.length > 500 && (
+                      <button
+                        onClick={() => setExpandedArticle(expandedArticle === article.id ? null : article.id)}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                      >
+                        {expandedArticle === article.id ? 'Show Less' : 'Read Full Article'}
+                      </button>
+                    )}
                     <button
                       onClick={() => navigator.clipboard.writeText(article.content)}
                       className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
-                      Copy Full Article
+                      Copy Article
                     </button>
                     <button
                       onClick={() => {
