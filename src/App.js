@@ -19,6 +19,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
   const [user, setUser] = useState(null);
+  const [articles, setArticles] = useState([]);
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
@@ -121,6 +122,33 @@ function App() {
   };
 
   // Supabase functions
+  const loadArticles = async () => {
+    try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) {
+        setArticles([]);
+        return;
+      }
+
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setArticles(data || []);
+      } else {
+        throw new Error('Supabase not configured');
+      }
+    } catch (error) {
+      console.error('Error loading articles:', error);
+      setArticles([]);
+    }
+  };
+
   const loadSeeds = async () => {
     setIsLoading(true);
     try {
@@ -247,6 +275,7 @@ function App() {
         
         console.log('Article saved successfully:', data);
         alert('Article saved successfully!');
+        loadArticles(); // Refresh articles list
         return data;
       } else {
         throw new Error('Supabase not configured - environment variables missing');
@@ -402,10 +431,11 @@ Format as clean markdown ready for Substack.`;
     checkAuth();
   }, []);
 
-  // Reload seeds when user changes
+  // Reload seeds and articles when user changes
   useEffect(() => {
     if (user) {
       loadSeeds();
+      loadArticles();
     }
   }, [user]);
 
@@ -435,8 +465,8 @@ Format as clean markdown ready for Substack.`;
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Ready to Write</p>
-              <p className="text-2xl font-bold text-gray-900">2</p>
+              <p className="text-sm text-gray-600">Articles Written</p>
+              <p className="text-2xl font-bold text-gray-900">{articles.length}</p>
             </div>
             <PenTool className="w-8 h-8 text-blue-600" />
           </div>
@@ -826,6 +856,83 @@ Format as clean markdown ready for Substack.`;
     </div>
   );
 
+  const renderArticles = () => (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold text-gray-900">Your Published Articles</h2>
+        </div>
+        <div className="p-6">
+          {articles.length === 0 ? (
+            <div className="text-center py-8">
+              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No articles yet</h3>
+              <p className="text-gray-600 mb-4">Start by developing your seeds into full articles</p>
+              <button
+                onClick={() => setCurrentView('cowriter')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Use AI Co-Writer
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {articles.map((article) => (
+                <div
+                  key={article.id}
+                  className="border rounded-lg p-6 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{article.title}</h3>
+                      <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                          {article.pillar}
+                        </span>
+                        <span>
+                          {new Date(article.created_at).toLocaleDateString()}
+                        </span>
+                        <span>
+                          {article.content.length} characters
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="prose max-w-none">
+                    <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-700">
+                        {article.content.substring(0, 500)}...
+                      </pre>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(article.content)}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Copy Full Article
+                    </button>
+                    <button
+                      onClick={() => {
+                        const fullArticle = `# ${article.title}\n\n${article.content}`;
+                        navigator.clipboard.writeText(fullArticle);
+                      }}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Copy with Title
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   // Show login page if user is not authenticated
   if (!user) {
     return (
@@ -918,6 +1025,18 @@ Format as clean markdown ready for Substack.`;
                 <PenTool className="w-4 h-4 mr-2" />
                 Co-Writer
               </button>
+
+              <button
+                onClick={() => setCurrentView('articles')}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  currentView === 'articles'
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Articles
+              </button>
             </nav>
           </div>
         </div>
@@ -928,6 +1047,7 @@ Format as clean markdown ready for Substack.`;
         {currentView === 'dashboard' && renderDashboard()}
         {currentView === 'capture' && renderCapture()}
         {currentView === 'cowriter' && renderCoWriter()}
+        {currentView === 'articles' && renderArticles()}
       </main>
     </div>
   );
