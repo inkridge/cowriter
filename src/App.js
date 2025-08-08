@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut, FileText, Tag, Search } from 'lucide-react';
+import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut, FileText, Tag, Search, Menu, X } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
@@ -46,6 +46,7 @@ function App() {
   });
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
@@ -1464,132 +1465,198 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
 
   return (
     <div
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-gray-50 flex"
       onClick={(e) => {
-        if (!e.target.closest('.relative')) {
+        if (!e.target.closest('.relative') && !e.target.closest('.sidebar')) {
           setShowProfileMenu(false);
           setShowActionMenu(false);
+          setSidebarOpen(false);
         }
       }}
     >
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between h-16 px-6 border-b">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-purple-600 cursor-pointer" onClick={() => setCurrentView('dashboard')}>Inkridge</h1>
-              <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
+              <h1 className="text-xl font-bold text-purple-600 cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+                Inkridge
+              </h1>
             </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-            {/* User Profile */}
-            <div className="relative">
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <span className="text-sm text-gray-700 font-medium">{user.name}</span>
-              </button>
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
+            <button
+              onClick={() => {
+                setCurrentView('dashboard');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+                currentView === 'dashboard'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <BarChart3 className="w-5 h-5 mr-3" />
+              Dashboard
+            </button>
 
-              {showProfileMenu && (
-                <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
-                  <div className="px-4 py-2 border-b">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">Signed in with Replit</p>
-                  </div>
+            <button
+              onClick={() => {
+                setCurrentView('capture');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+                currentView === 'capture'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <Plus className="w-5 h-5 mr-3" />
+              Capture Seeds
+            </button>
 
-                  <button
-                    onClick={() => {
-                      logout();
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={() => {
+                setCurrentView('cowriter');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+                currentView === 'cowriter'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <PenTool className="w-5 h-5 mr-3" />
+              Co-Writer
+            </button>
 
-            <nav className="flex space-x-8">
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentView === 'dashboard'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Dashboard
-              </button>
+            <button
+              onClick={() => {
+                setCurrentView('notes');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+                currentView === 'notes' || currentView === 'add-note'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <FileText className="w-5 h-5 mr-3" />
+              Notes
+            </button>
 
-              <button
-                onClick={() => setCurrentView('capture')}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentView === 'capture'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Capture Seeds
-              </button>
+            <button
+              onClick={() => {
+                setCurrentView('articles');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+                currentView === 'articles'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <BookOpen className="w-5 h-5 mr-3" />
+              Articles
+            </button>
+          </nav>
 
-              <button
-                onClick={() => setCurrentView('cowriter')}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentView === 'cowriter'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <PenTool className="w-4 h-4 mr-2" />
-                Co-Writer
-              </button>
-
-              <button
-                onClick={() => setCurrentView('notes')}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentView === 'notes' || currentView === 'add-note'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Notes
-              </button>
-
-              <button
-                onClick={() => setCurrentView('articles')}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentView === 'articles'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Articles
-              </button>
-            </nav>
+          {/* Sidebar Footer */}
+          <div className="px-4 py-4 border-t">
+            <p className="text-xs text-gray-500 text-center">Creative Workflow Companion</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Layout */}
+      <div className="flex-1 flex flex-col lg:ml-0">
+        {/* Top Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+
+              {/* Desktop Logo (hidden on mobile since it's in sidebar) */}
+              <div className="hidden lg:flex items-center">
+                <h1 className="text-xl font-bold text-purple-600 cursor-pointer" onClick={() => setCurrentView('dashboard')}>
+                  Inkridge
+                </h1>
+                <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
+              </div>
+
+              {/* User Profile */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="hidden sm:block text-sm text-gray-700 font-medium">{user.name}</span>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
+                    <div className="px-4 py-2 border-b">
+                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">Signed in with Replit</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 overflow-auto">
         {currentView === 'dashboard' && renderDashboard()}
-        {currentView === 'capture' && renderCapture()}
-        {currentView === 'cowriter' && renderCoWriter()}
-        {currentView === 'notes' && renderNotes()}
-        {currentView === 'add-note' && renderAddNote()}
-        {currentView === 'articles' && renderArticles()}
-      </main>
+          {currentView === 'capture' && renderCapture()}
+          {currentView === 'cowriter' && renderCoWriter()}
+          {currentView === 'notes' && renderNotes()}
+          {currentView === 'add-note' && renderAddNote()}
+          {currentView === 'articles' && renderArticles()}
+        </main>
+      </div>
 
       {/* Edit Note Modal */}
       {editingNote && (
