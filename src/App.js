@@ -31,6 +31,13 @@ function App() {
   });
   const [expandedNote, setExpandedNote] = useState(null);
   const [noteFilter, setNoteFilter] = useState('all');
+  const [editingNote, setEditingNote] = useState(null);
+  const [editNote, setEditNote] = useState({
+    title: '',
+    content: '',
+    type: 'template',
+    tags: ''
+  });
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
@@ -277,6 +284,50 @@ What would you tell someone else facing this?
     } catch (error) {
       console.error('Error deleting note:', error);
     }
+  };
+
+  const updateNote = async (e) => {
+    e.preventDefault();
+    if (!editNote.title.trim() || !editNote.content.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) throw new Error('User not authenticated');
+
+      const updatedNotes = notes.map(note => 
+        note.id === editingNote.id 
+          ? {
+              ...note,
+              title: editNote.title.trim(),
+              content: editNote.content.trim(),
+              type: editNote.type,
+              tags: editNote.tags.trim(),
+              updated_at: new Date().toISOString()
+            }
+          : note
+      );
+
+      setNotes(updatedNotes);
+      localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(updatedNotes));
+
+      setEditingNote(null);
+      setEditNote({ title: '', content: '', type: 'template', tags: '' });
+    } catch (error) {
+      console.error('Error updating note:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startEditingNote = (note) => {
+    setEditingNote(note);
+    setEditNote({
+      title: note.title,
+      content: note.content,
+      type: note.type,
+      tags: note.tags || ''
+    });
   };
 
   const loadSeeds = async () => {
@@ -1219,13 +1270,22 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{note.title}</h3>
-                    <button
-                      onClick={() => deleteNote(note.id)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
-                      title="Delete note"
-                    >
-                      ×
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => startEditingNote(note)}
+                        className="text-gray-400 hover:text-blue-600 transition-colors"
+                        title="Edit note"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => deleteNote(note.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors"
+                        title="Delete note"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="flex items-center space-x-2 mb-3">
@@ -1535,6 +1595,94 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
         {currentView === 'add-note' && renderAddNote()}
         {currentView === 'articles' && renderArticles()}
       </main>
+
+      {/* Edit Note Modal */}
+      {editingNote && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Edit Note</h2>
+              <form onSubmit={updateNote} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    value={editNote.title}
+                    onChange={(e) => setEditNote(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Give your note a descriptive title"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type
+                  </label>
+                  <select
+                    value={editNote.type}
+                    onChange={(e) => setEditNote(prev => ({ ...prev, type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="template">Template</option>
+                    <option value="prompt">Prompt</option>
+                    <option value="reference">Reference</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Content
+                  </label>
+                  <textarea
+                    rows={12}
+                    value={editNote.content}
+                    onChange={(e) => setEditNote(prev => ({ ...prev, content: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter your template, prompt, or reference content..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tags (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editNote.tags}
+                    onChange={(e) => setEditNote(prev => ({ ...prev, tags: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="ai, writing, template, prompt"
+                  />
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  >
+                    {isLoading ? 'Updating...' : 'Update Note'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingNote(null);
+                      setEditNote({ title: '', content: '', type: 'template', tags: '' });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Action Button */}
       {currentView === 'dashboard' && (
