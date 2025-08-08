@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut } from 'lucide-react';
+import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut, FileText, Tag, Search } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
@@ -22,6 +22,15 @@ function App() {
   const [user, setUser] = useState(null);
   const [articles, setArticles] = useState([]);
   const [expandedArticle, setExpandedArticle] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [newNote, setNewNote] = useState({
+    title: '',
+    content: '',
+    type: 'template',
+    tags: ''
+  });
+  const [expandedNote, setExpandedNote] = useState(null);
+  const [noteFilter, setNoteFilter] = useState('all');
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
@@ -150,6 +159,123 @@ function App() {
     } catch (error) {
       console.error('Error loading articles:', error);
       setArticles([]);
+    }
+  };
+
+  const loadNotes = async () => {
+    setIsLoading(true);
+    try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) {
+        setNotes([]);
+        return;
+      }
+
+      // For now, use localStorage for notes since we don't have a notes table in Supabase
+      const savedNotes = localStorage.getItem(`notes_${currentUser.id}`);
+      if (savedNotes) {
+        setNotes(JSON.parse(savedNotes));
+      } else {
+        // Default templates
+        const defaultNotes = [
+          {
+            id: 1,
+            title: "Article Title Generator Prompt",
+            content: `Generate 3 compelling titles for an article about: [TOPIC]
+
+Make them:
+- Conversational (like telling a friend)
+- Specific to the actual experience
+- Intriguing but not clickbait-y
+- Something a real person would say
+
+Examples of good style:
+- "I accidentally became our company's AI person"
+- "Three hours and one broken app later..."
+- "Turns out I'm not as tech-savvy as I thought"`,
+            type: "prompt",
+            tags: "title, generation, ai",
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            title: "Build Log Article Template",
+            content: `# [Title]
+
+## The Setup
+What was happening that led to this moment?
+
+## The Challenge
+What went wrong or felt uncertain?
+
+## What I Tried
+The messy middle - what did you actually do?
+
+## The Outcome
+How did it turn out? What worked/didn't work?
+
+## The Takeaway
+What would you tell someone else facing this?
+
+---
+**Key Insight:** [Bold the main lesson here]`,
+            type: "template",
+            tags: "build log, structure, template",
+            created_at: new Date().toISOString()
+          }
+        ];
+        setNotes(defaultNotes);
+        localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(defaultNotes));
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      setNotes([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveNote = async (e) => {
+    e.preventDefault();
+    if (!newNote.title.trim() || !newNote.content.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) throw new Error('User not authenticated');
+
+      const noteToSave = {
+        id: Date.now(),
+        title: newNote.title.trim(),
+        content: newNote.content.trim(),
+        type: newNote.type,
+        tags: newNote.tags.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      const updatedNotes = [noteToSave, ...notes];
+      setNotes(updatedNotes);
+      localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(updatedNotes));
+
+      setNewNote({ title: '', content: '', type: 'template', tags: '' });
+      setCurrentView('notes');
+    } catch (error) {
+      console.error('Error saving note:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteNote = async (noteId) => {
+    try {
+      const currentUser = user || await checkAuth();
+      if (!currentUser) return;
+
+      const updatedNotes = notes.filter(note => note.id !== noteId);
+      setNotes(updatedNotes);
+      localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(updatedNotes));
+    } catch (error) {
+      console.error('Error deleting note:', error);
     }
   };
 
@@ -480,11 +606,12 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
     checkAuth();
   }, []);
 
-  // Reload seeds and articles when user changes
+  // Reload seeds, articles, and notes when user changes
   useEffect(() => {
     if (user) {
       loadSeeds();
       loadArticles();
+      loadNotes();
     }
   }, [user]);
 
@@ -1027,6 +1154,229 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
     </div>
   );
 
+  const renderNotes = () => {
+    const filteredNotes = notes.filter(note => {
+      if (noteFilter === 'all') return true;
+      return note.type === noteFilter;
+    });
+
+    return (
+      <div className="space-y-6">
+        {/* Header with filter and add button */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Notes & Templates</h2>
+              <p className="text-sm text-gray-600">Store your prompts, templates, and reference materials</p>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              {/* Filter */}
+              <select
+                value={noteFilter}
+                onChange={(e) => setNoteFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="all">All Types</option>
+                <option value="template">Templates</option>
+                <option value="prompt">Prompts</option>
+                <option value="reference">Reference</option>
+              </select>
+              
+              <button
+                onClick={() => setCurrentView('add-note')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Note
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Notes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNotes.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {noteFilter === 'all' ? 'No notes yet' : `No ${noteFilter}s yet`}
+              </h3>
+              <p className="text-gray-600 mb-4">Start building your knowledge base</p>
+              <button
+                onClick={() => setCurrentView('add-note')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Create Your First Note
+              </button>
+            </div>
+          ) : (
+            filteredNotes.map((note) => (
+              <div
+                key={note.id}
+                className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{note.title}</h3>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      title="Delete note"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      note.type === 'template' ? 'bg-blue-100 text-blue-800' :
+                      note.type === 'prompt' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {note.type}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(note.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className={`prose max-w-none ${expandedNote === note.id ? '' : 'max-h-32'} overflow-hidden`}>
+                    <div className="text-sm text-gray-600 whitespace-pre-wrap">
+                      {expandedNote === note.id ? (
+                        note.content
+                      ) : (
+                        <>
+                          {note.content.substring(0, 200)}
+                          {note.content.length > 200 && (
+                            <span className="text-gray-400">...</span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {note.tags && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {note.tags.split(',').map((tag, index) => (
+                        <span
+                          key={index}
+                          className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded flex items-center"
+                        >
+                          <Tag className="w-3 h-3 mr-1" />
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {note.content.length > 200 && (
+                      <button
+                        onClick={() => setExpandedNote(expandedNote === note.id ? null : note.id)}
+                        className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+                      >
+                        {expandedNote === note.id ? 'Show Less' : 'Read More'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => navigator.clipboard.writeText(note.content)}
+                      className="text-green-600 hover:text-green-800 text-sm font-medium"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderAddNote = () => (
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Note</h2>
+        <form onSubmit={saveNote} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              value={newNote.title}
+              onChange={(e) => setNewNote(prev => ({ ...prev, title: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Give your note a descriptive title"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Type
+            </label>
+            <select
+              value={newNote.type}
+              onChange={(e) => setNewNote(prev => ({ ...prev, type: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="template">Template</option>
+              <option value="prompt">Prompt</option>
+              <option value="reference">Reference</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Content
+            </label>
+            <textarea
+              rows={12}
+              value={newNote.content}
+              onChange={(e) => setNewNote(prev => ({ ...prev, content: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter your template, prompt, or reference content..."
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={newNote.tags}
+              onChange={(e) => setNewNote(prev => ({ ...prev, tags: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="ai, writing, template, prompt"
+            />
+          </div>
+
+          <div className="flex space-x-3">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? 'Saving...' : 'Save Note'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentView('notes')}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   // Show login page if user is not authenticated
   if (!user) {
     return (
@@ -1149,6 +1499,18 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
               </button>
 
               <button
+                onClick={() => setCurrentView('notes')}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  currentView === 'notes' || currentView === 'add-note'
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Notes
+              </button>
+
+              <button
                 onClick={() => setCurrentView('articles')}
                 className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   currentView === 'articles'
@@ -1169,6 +1531,8 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
         {currentView === 'dashboard' && renderDashboard()}
         {currentView === 'capture' && renderCapture()}
         {currentView === 'cowriter' && renderCoWriter()}
+        {currentView === 'notes' && renderNotes()}
+        {currentView === 'add-note' && renderAddNote()}
         {currentView === 'articles' && renderArticles()}
       </main>
 
@@ -1193,6 +1557,16 @@ Don't make it sound like marketing copy or a business case study. Just tell the 
               >
                 <Plus className="w-5 h-5 text-purple-600 mr-2" />
                 <span className="text-gray-800 font-medium">Capture Seeds</span>
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentView('add-note');
+                  setShowActionMenu(false);
+                }}
+                className="flex items-center p-3 rounded-lg bg-white shadow-md hover:bg-gray-100 transition-colors"
+              >
+                <FileText className="w-5 h-5 text-purple-600 mr-2" />
+                <span className="text-gray-800 font-medium">Add Note</span>
               </button>
               <button
                 onClick={() => {
