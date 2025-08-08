@@ -14,6 +14,11 @@ function App() {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
+  const [newSeed, setNewSeed] = useState({
+    title: '',
+    content: '',
+    pillar: 'Build Log'
+  });
 
   // Initialize Gemini AI
   const initializeAI = () => {
@@ -143,6 +148,25 @@ Format as clean markdown ready for Substack.`;
     }
   };
 
+  // Save new seed
+  const saveSeed = (e) => {
+    e.preventDefault();
+    if (!newSeed.title.trim() || !newSeed.content.trim()) return;
+    
+    const seed = {
+      id: Date.now(),
+      title: newSeed.title.trim(),
+      content: newSeed.content.trim(),
+      pillar: newSeed.pillar,
+      date: new Date().toISOString(),
+      status: "captured"
+    };
+    
+    setSeeds(prev => [seed, ...prev]);
+    setNewSeed({ title: '', content: '', pillar: 'Build Log' });
+    setCurrentView('dashboard');
+  };
+
   // Sample data for demonstration
   useEffect(() => {
     setSeeds([
@@ -259,15 +283,18 @@ Format as clean markdown ready for Substack.`;
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Capture New Seed</h2>
-        <form className="space-y-6">
+        <form onSubmit={saveSeed} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Quick Title
             </label>
             <input
               type="text"
+              value={newSeed.title}
+              onChange={(e) => setNewSeed(prev => ({ ...prev, title: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="What happened with AI today?"
+              required
             />
           </div>
           
@@ -277,8 +304,11 @@ Format as clean markdown ready for Substack.`;
             </label>
             <textarea
               rows={4}
+              value={newSeed.content}
+              onChange={(e) => setNewSeed(prev => ({ ...prev, content: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Capture the moment, insight, or experience..."
+              required
             />
           </div>
           
@@ -286,11 +316,15 @@ Format as clean markdown ready for Substack.`;
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Content Pillar
             </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-              <option>Build Log</option>
-              <option>Leadership Lens</option>
-              <option>Meta-Skill</option>
-              <option>Field Note</option>
+            <select 
+              value={newSeed.pillar}
+              onChange={(e) => setNewSeed(prev => ({ ...prev, pillar: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="Build Log">Build Log</option>
+              <option value="Leadership Lens">Leadership Lens</option>
+              <option value="Meta-Skill">Meta-Skill</option>
+              <option value="Field Note">Field Note</option>
             </select>
           </div>
           
