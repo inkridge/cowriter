@@ -33,24 +33,24 @@ function App() {
 
     const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
     const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-    
-    console.log('Environment check:', {
-      url: supabaseUrl || 'UNDEFINED',
-      urlLength: supabaseUrl ? supabaseUrl.length : 0,
-      key: supabaseKey ? 'SET' : 'UNDEFINED',
-      keyLength: supabaseKey ? supabaseKey.length : 0
-    });
 
     // Only create Supabase client if both URL and key are valid
     if (supabaseUrl && supabaseKey && supabaseUrl.trim() !== '' && supabaseKey.trim() !== '') {
       try {
-        supabaseClientInstance = createClient(supabaseUrl, supabaseKey);
+        supabaseClientInstance = createClient(supabaseUrl, supabaseKey, {
+          auth: {
+            persistSession: false, // Prevent multiple auth instances
+            autoRefreshToken: false
+          }
+        });
+        console.log('Supabase client created successfully');
         return supabaseClientInstance;
       } catch (error) {
         console.error('Error creating Supabase client:', error);
         return null;
       }
     }
+    console.log('Supabase environment variables not set properly');
     return null;
   };
 
