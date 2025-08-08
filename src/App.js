@@ -22,11 +22,13 @@ function App() {
     pillar: 'Build Log'
   });
 
-  // Initialize Supabase client
-  const supabase = createClient(
-    process.env.REACT_APP_SUPABASE_URL || '',
-    process.env.REACT_APP_SUPABASE_ANON_KEY || ''
-  );
+  // Initialize Supabase client with fallback
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+  const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+  
+  const supabase = supabaseUrl && supabaseKey 
+    ? createClient(supabaseUrl, supabaseKey)
+    : null;
 
   // Initialize Gemini AI
   const initializeAI = () => {
@@ -44,13 +46,17 @@ function App() {
   const loadSeeds = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('seeds')
-        .select('*')
-        .order('created_at', { ascending: false });
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('seeds')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setSeeds(data || []);
+        if (error) throw error;
+        setSeeds(data || []);
+      } else {
+        throw new Error('Supabase not configured');
+      }
     } catch (error) {
       console.error('Error loading seeds:', error);
       // Fallback to sample data if Supabase fails
@@ -79,19 +85,23 @@ function App() {
 
   const saveSeedToSupabase = async (seedData) => {
     try {
-      const { data, error } = await supabase
-        .from('seeds')
-        .insert([{
-          title: seedData.title,
-          content: seedData.content,
-          pillar: seedData.pillar,
-          status: 'captured'
-        }])
-        .select()
-        .single();
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('seeds')
+          .insert([{
+            title: seedData.title,
+            content: seedData.content,
+            pillar: seedData.pillar,
+            status: 'captured'
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } else {
+        throw new Error('Supabase not configured');
+      }
     } catch (error) {
       console.error('Error saving seed:', error);
       // Fallback to local storage
@@ -109,21 +119,25 @@ function App() {
 
   const saveArticleToSupabase = async (articleData) => {
     try {
-      const { data, error } = await supabase
-        .from('articles')
-        .insert([{
-          seed_id: selectedSeed.id,
-          title: selectedTitle,
-          content: generatedContent,
-          pillar: selectedSeed.pillar,
-          questions: pillarQuestions,
-          answers: answers
-        }])
-        .select()
-        .single();
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('articles')
+          .insert([{
+            seed_id: selectedSeed.id,
+            title: selectedTitle,
+            content: generatedContent,
+            pillar: selectedSeed.pillar,
+            questions: pillarQuestions,
+            answers: answers
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } else {
+        throw new Error('Supabase not configured');
+      }
     } catch (error) {
       console.error('Error saving article:', error);
       return null;
