@@ -273,7 +273,7 @@ function App() {
           console.error('Supabase error:', error);
           throw error;
         }
-        
+
         console.log('Article saved successfully:', data);
         alert('Article saved successfully!');
         loadArticles(); // Refresh articles list
@@ -899,7 +899,7 @@ Format as clean markdown ready for Substack.`;
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="prose max-w-none">
                     <div className={`bg-gray-50 rounded-lg p-4 ${expandedArticle === article.id ? '' : 'max-h-64'} overflow-y-auto`}>
                       <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-700">
@@ -916,7 +916,7 @@ Format as clean markdown ready for Substack.`;
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex flex-wrap gap-3">
                     {article.content.length > 500 && (
                       <button
