@@ -93,55 +93,56 @@ function App() {
   // Auth functions
   const checkAuth = async () => {
     try {
-      const response = await fetch('/__replauthuser');
-      if (response.ok) {
-        const userData = await response.json();
-        if (userData.id) {
-          const user = { id: userData.id, name: userData.name };
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const user = { 
+            id: session.user.id, 
+            name: session.user.email || session.user.user_metadata?.name || 'User',
+            email: session.user.email
+          };
           setUser(user);
           return user;
         }
       }
     } catch (error) {
-      console.log('Not authenticated yet');
+      console.log('Not authenticated yet:', error);
     }
     return null;
   };
 
-  const loginWithReplit = () => {
-    window.addEventListener("message", authComplete);
-    var h = 500;
-    var w = 350;
-    var left = screen.width / 2 - w / 2;
-    var top = screen.height / 2 - h / 2;
-
-    var authWindow = window.open(
-      "https://replit.com/auth_with_repl_site?domain=" + location.host,
-      "_blank",
-      "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
-        w +
-        ", height=" +
-        h +
-        ", top=" +
-        top +
-        ", left=" +
-        left
-    );
-
-    function authComplete(e) {
-      if (e.data !== "auth_complete") {
-        return;
+  const loginWithSupabase = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin
+          }
+        });
+        if (error) throw error;
       }
-
-      window.removeEventListener("message", authComplete);
-      authWindow.close();
-      checkAuth(); // Refresh user data after login
+    } catch (error) {
+      console.error('Error signing in:', error);
+      alert('Failed to sign in. Please try again.');
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setSeeds([]);
+  const logout = async () => {
+    try {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      setUser(null);
+      setSeeds([]);
+      setArticles([]);
+      setNotes([]);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   // Supabase functions
@@ -625,9 +626,37 @@ Write the complete article:`;
     }
   };
 
-  // Load seeds from Supabase on app start
+  // Initialize auth and listen for auth state changes
   useEffect(() => {
-    checkAuth();
+    const initAuth = async () => {
+      await checkAuth();
+      
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+              const user = { 
+                id: session.user.id, 
+                name: session.user.email || session.user.user_metadata?.name || 'User',
+                email: session.user.email
+              };
+              setUser(user);
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null);
+              setSeeds([]);
+              setArticles([]);
+              setNotes([]);
+            }
+          }
+        );
+
+        return () => subscription.unsubscribe();
+      }
+    };
+
+    initAuth();
   }, []);
 
   // Reload seeds, articles, and notes when user changes
@@ -1466,14 +1495,14 @@ Write the complete article:`;
               Sign in with your Replit account to save your story seeds and generated content.
             </p>
             <button
-              onClick={loginWithReplit}
+              onClick={loginWithSupabase}
               className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
             >
               <User className="w-5 h-5 mr-2" />
-              Log in with Replit
+              Log in with Google
             </button>
             <p className="text-xs text-gray-500 mt-4">
-              We use Replit Auth to securely authenticate your account. Your data is stored safely and only accessible to you.
+              We use Supabase Auth with Google to securely authenticate your account. Your data is stored safely and only accessible to you.
             </p>
           </div>
         </div>
@@ -1682,7 +1711,8 @@ Write the complete article:`;
                   <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
                     <div className="px-4 py-2 border-b">
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">Signed in with Replit</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                      <p className="text-xs text-gray-400">Signed in with Google</p>
                     </div>
 
                     <button
