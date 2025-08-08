@@ -480,24 +480,31 @@ What would you tell someone else facing this?
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `I need help creating article titles for a story about: "${seed.content}"
+      const prompt = `Role & Purpose
+You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+Your job is to take a small "story seed" and work with the user to create a 500–800 word publish-ready article for Substack that blends immersive storytelling with applicable leadership/AI insights.
 
-Write 3 compelling titles that sound natural and human. Avoid corporate speak, buzzwords, or overly dramatic language. 
+Audience: Non-technical CEOs, founders, and leaders exploring AI adoption.
+Tone: Conversational, reflective, slightly raw, rooted in lived experience. Avoid jargon unless explained simply.
 
-Make them:
-- Conversational (like you'd tell a friend)
-- Specific to the actual experience
-- Intriguing but not clickbait-y
-- Something a real person would actually say
+Story Seed: "${seed.content}"
+Pillar: "${seed.pillar}"
 
-Don't use phrases like "curiosity-driven" or "grab attention" or marketing speak. Just write titles that feel authentic and interesting.
+Generate 3–4 title options that are:
+- Specific enough to promise value
+- Intriguing without giving the full answer
+- Styled for Substack performance (curiosity + clarity)
+- Variations: metaphor anchor, tension question, "The Day…", "Why I…"
 
-Examples of good style:
-- "I accidentally became our company's AI person"
-- "Three hours and one broken app later..."
-- "Turns out I'm not as tech-savvy as I thought"
+Create authentic, conversational titles that sound like real human experiences. Avoid corporate speak or marketing jargon.
 
-Create 3 titles now, just the titles, no explanations:`;
+Examples of good Substack titles:
+- "The day I realized our AI wasn't actually intelligent"
+- "Why I stopped trying to understand machine learning"
+- "Three meetings that changed how I think about AI"
+- "I thought I hired an AI expert. I was wrong."
+
+Generate 3 titles now, just the titles, no explanations:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
