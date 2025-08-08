@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#7c3aed" />
+    
+    <!-- SEO and Social Meta Tags -->
+    <meta name="description" content="Creative Workflow Companion for non-tech leaders documenting their AI journey. Transform story seeds into compelling Substack posts." />
+    <meta name="keywords" content="AI, leadership, content creation, Substack, writing workflow, build in public" />
+    <meta name="author" content="Inkridge" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://inkridge-app.netlify.app/" />
+    <meta property="og:title" content="Inkridge - Creative Workflow Companion" />
+    <meta property="og:description" content="Transform your AI journey into compelling content with guided co-writing" />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://inkridge-app.netlify.app/" />
+    <meta property="twitter:title" content="Inkridge - Creative Workflow Companion" />
+    <meta property="twitter:description" content="Transform your AI journey into compelling content with guided co-writing" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    
+    <!-- Progressive Web App -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+      /* Prevent flash of unstyled content */
+      body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        margin: 0;
+        background-color: #f9fafb;
+      }
+      
+      /* Loading spinner for initial app load */
+      .app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f9fafb;
+        z-index: 9999;
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #7c3aed;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Hide loading spinner when React app loads */
+      #root:not(:empty) + .app-loading {
+        display: none;
+      }
+    </style>
+    
+    <title>Inkridge - Creative Workflow Companion</title>
+  </head>
+  <body>
+    <!-- Fallback for users with JavaScript disabled -->
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: system-ui;">
+        <h1>Inkridge requires JavaScript</h1>
+        <p>Please enable JavaScript in your browser to use this application.</p>
+      </div>
+    </noscript>
+    
+    <!-- React app mounts here -->
+    <div id="root"></div>
+    
+    <!-- Loading spinner shown while React app loads -->
+    <div class="app-loading">
+      <div class="spinner"></div>
+    </div>
+    
+    <!-- Analytics (add your tracking code here) -->
+    <script>
+      // Example: Google Analytics, Plausible, etc.
+      // window.gtag = function(){dataLayer.push(arguments);}
+    </script>
+  </body>
+</html>
