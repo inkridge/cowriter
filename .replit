@@ -31,3 +31,7 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm install"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
