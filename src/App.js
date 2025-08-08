@@ -300,7 +300,7 @@ function App() {
 Content Pillar: ${seed.pillar}
 
 Generate 3 compelling, click-worthy titles for a Substack post. Make them:
-- Authentic and vulnerable 
+- Authentic and vulnerable
 - Specific to the AI/leadership context
 - Between 6-12 words
 - Engaging without being clickbait
@@ -341,7 +341,7 @@ ${pillarPrompts[pillar]}
 
 Generate 5 specific questions that will help the author develop this into a compelling 600-800 word Substack post. Questions should:
 - Draw out concrete details and examples
-- Encourage vulnerability and authenticity  
+- Encourage vulnerability and authenticity
 - Help connect to broader leadership/AI themes
 - Build a narrative arc
 
@@ -988,7 +988,7 @@ Format as clean markdown ready for Substack.`;
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-purple-600">Inkridge</h1>
+              <h1 className="text-xl font-bold text-purple-600 cursor-pointer" onClick={() => setCurrentView('dashboard')}>Inkridge</h1>
               <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
             </div>
 
