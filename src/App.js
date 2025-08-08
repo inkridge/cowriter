@@ -27,6 +27,7 @@ function App() {
     pillar: 'Build Log'
   });
   const [showActionMenu, setShowActionMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Initialize Supabase client function
   const getSupabaseClient = () => {
@@ -973,7 +974,15 @@ Format as clean markdown ready for Substack.`;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div 
+      className="min-h-screen bg-gray-50"
+      onClick={(e) => {
+        if (!e.target.closest('.relative')) {
+          setShowProfileMenu(false);
+          setShowActionMenu(false);
+        }
+      }}
+    >
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -984,19 +993,38 @@ Format as clean markdown ready for Substack.`;
             </div>
 
             {/* User Profile */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
+            <div className="relative">
               <button
-                onClick={logout}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                title="Logout"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <LogOut className="w-5 h-5" />
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-700 font-medium">{user.name}</span>
               </button>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
+                  <div className="px-4 py-2 border-b">
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">Signed in with Replit</p>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      logout();
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
 
             <nav className="flex space-x-8">
