@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -7,15 +8,15 @@ import App from './App';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Inkridge Error:', error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   render() {
@@ -47,7 +48,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Initialize React app with error boundary
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
@@ -56,22 +56,3 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>
 );
-
-// Performance monitoring (optional)
-if (process.env.NODE_ENV === 'production') {
-  // You can add performance monitoring here
-  // Example: web-vitals, Sentry, etc.
-}
-
-// Service worker registration for offline support (future enhancement)
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-}
