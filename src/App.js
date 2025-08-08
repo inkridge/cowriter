@@ -480,39 +480,43 @@ What would you tell someone else facing this?
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `You are generating Substack-ready article titles.
-
-Story Seed: "${seed.content}"
+      const prompt = `Generate 5 Substack-ready titles for this seed:
+Seed: "${seed.content}"
 Pillar: "${seed.pillar}"
 
-For each seed, return 5 title options that are:
+MANDATORY REQUIREMENTS:
 
-**Specific** — name the transformation, project, or turning point.
+1. Every title MUST directly reference the seed's core topic — use exact keywords or clear synonyms from the seed content.
 
-**Clear** — make the reader know exactly what the post is about.
+2. Use EXACTLY one of these 5 formats (one title per format):
+   - "The Day..." (specific moment format)
+   - "Why I..." (personal reasoning format)  
+   - Tension question (starts with "How/What/Can/Should...")
+   - Transformation statement ("From X to Y" or "X Became Y")
+   - Metaphor anchor (concrete comparison or analogy)
 
-**Curiosity-driven** — create tension, contrast, or an intriguing question.
+3. Be hyper-specific:
+   - Name the exact transformation, tool, moment, or decision from the seed
+   - Include concrete nouns (app, tool, system, project name, etc.)
+   - Reference the actual outcome or change mentioned
 
-**Compact** — 12–16 words max.
+4. Keep under 16 words maximum.
 
-**Formats**: Include at least 1 "The Day…", 1 "Why I…", 1 tension question, 1 transformation statement, and 1 metaphor anchor.
+5. FORBIDDEN phrases (never use):
+   "daily grind", "hard path", "leadership journey", "marathon", "momentum", "engine", "showing up every day", "what I learned", "the process", "my experience"
 
-Avoid vague phrases like "what I learned" or "showing up every day" unless paired with a concrete context.
+6. Make it instantly clear this is an AI/leadership build story, not generic business advice.
 
-Optimise for the Substack reading feed — the reader should instantly know it's an AI/leadership build journey, not generic self-help.
+7. Each title must pass the "Substack feed test" — reader knows exactly what they'll get before clicking.
 
-Example Input: "What took me over the edge from non-tech CEO to app builder"
+EXAMPLE for seed "What took me over the edge from non-tech CEO to app builder":
+1. The Day a Weekend AI Experiment Turned Me Into an App Builder
+2. Why a Single AI Project Pushed This Non-Tech CEO Into Coding  
+3. Can a Non-Tech CEO Build an App? Here's How I Crossed the Line
+4. From CEO to App Builder in 90 Days — The Push I Didn't See Coming
+5. The Tipping Point That Made Me Go From Talking About AI to Building It
 
-Example Output:
-- The Day a Weekend AI Experiment Turned Me Into an App Builder
-- Why a Single AI Project Pushed This Non-Tech CEO Into Coding
-- From CEO to App Builder in 90 Days — The Push I Didn't See Coming
-- Can a Non-Tech CEO Build an App? Here's How I Crossed the Line
-- The Tipping Point That Made Me Go From Talking About AI to Building It
-
-Generate exactly 5 titles using the required formats. Each must be 12-16 words and include the specific project/challenge from the seed.
-
-Return only the titles, no explanations:`;
+Return format: A numbered list of exactly 5 titles, each using a different format from the list above.`;
 
       const result = await model.generateContent(prompt);
       const response = result.response;
