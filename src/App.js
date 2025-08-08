@@ -13,7 +13,7 @@ function App() {
   const [answers, setAnswers] = useState({});
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
 
   // Initialize Gemini AI
   const initializeAI = () => {
@@ -311,14 +311,9 @@ Format as clean markdown ready for Substack.`;
             <Wand2 className="w-5 h-5 text-yellow-600 mr-2" />
             <h3 className="text-lg font-medium text-yellow-800">Setup Gemini AI</h3>
           </div>
-          <p className="text-yellow-700 mb-4">Enter your Google AI API key to start co-writing:</p>
+          <p className="text-yellow-700 mb-4">Add your Gemini API key in Secrets to enable AI co-writing.</p>
           <div className="flex space-x-3">
-            <input
-              type="password"
-              placeholder="Enter your Gemini API key..."
-              className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              onChange={(e) => setApiKey(e.target.value)}
-            />
+            <span className="text-sm text-yellow-600">Secret Key: REACT_APP_GEMINI_API_KEY</span>
             <a 
               href="https://aistudio.google.com/app/apikey" 
               target="_blank" 
