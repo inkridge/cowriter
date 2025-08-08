@@ -857,8 +857,6 @@ Format as clean markdown ready for Substack.`;
     </div>
   );
 
-  const [expandedArticle, setExpandedArticle] = useState(null);
-
   const renderArticles = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border">
