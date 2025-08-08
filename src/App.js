@@ -473,7 +473,7 @@ What would you tell someone else facing this?
 
   // Generate titles using Gemini
   const generateTitles = async (seed) => {
-    if (!apiKey) return;
+    if (!apiKey || isGenerating) return;
 
     setIsGenerating(true);
     try {
@@ -946,12 +946,15 @@ Write the complete article now:`;
           </div>
           <button
             onClick={() => {
-              setGeneratedTitles([]);
-              generateTitles(selectedSeed);
+              if (!isGenerating) {
+                setGeneratedTitles([]);
+                generateTitles(selectedSeed);
+              }
             }}
-            className="text-purple-600 hover:text-purple-800 text-sm"
+            disabled={isGenerating}
+            className="text-purple-600 hover:text-purple-800 text-sm disabled:opacity-50"
           >
-            Generate Different Titles
+            {isGenerating ? 'Generating...' : 'Generate Different Titles'}
           </button>
         </div>
       )}
