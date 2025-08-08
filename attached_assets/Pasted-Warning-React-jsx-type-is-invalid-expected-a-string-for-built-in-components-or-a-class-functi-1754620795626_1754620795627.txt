@@ -1,0 +1,44 @@
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:40.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:72.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+
+Check your code at App.js:72.
+at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+at t.value (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:40.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:72.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `App`.
+Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `App`.
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:40.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
+Warning: React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check your code at App.js:72.
+    at App (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90109:88)
+    at ErrorBoundary (https://ace7b9fa-cbc9-4cbf-9b09-e69450c2f368-00-2qg5w18zrlrpf.sisko.replit.dev/static/js/bundle.js:90867:5)
