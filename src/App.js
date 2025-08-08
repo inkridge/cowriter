@@ -219,7 +219,14 @@ Format as clean markdown ready for Substack.`;
           ) : (
             <div className="space-y-4">
               {seeds.map((seed) => (
-                <div key={seed.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div 
+                  key={seed.id} 
+                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setSelectedSeed(seed);
+                    setCurrentView('cowriter');
+                  }}
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{seed.title}</h3>
@@ -232,6 +239,11 @@ Format as clean markdown ready for Substack.`;
                           {new Date(seed.date).toLocaleDateString()}
                         </span>
                       </div>
+                    </div>
+                    <div className="ml-4">
+                      <button className="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                        Develop →
+                      </button>
                     </div>
                   </div>
                 </div>
