@@ -99,7 +99,7 @@ function App() {
         if (session?.user) {
           const user = { 
             id: session.user.id, 
-            name: session.user.email || session.user.user_metadata?.name || 'User',
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
             email: session.user.email
           };
           setUser(user);
@@ -112,21 +112,50 @@ function App() {
     return null;
   };
 
-  const loginWithSupabase = async () => {
+  const [authMode, setAuthMode] = useState('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+
+    setLoading(true);
     try {
       const supabase = getSupabaseClient();
       if (supabase) {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin
-          }
-        });
-        if (error) throw error;
+        let result;
+        if (authMode === 'signin') {
+          result = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password: password.trim()
+          });
+        } else {
+          result = await supabase.auth.signUp({
+            email: email.trim(),
+            password: password.trim(),
+            options: {
+              data: {
+                name: email.split('@')[0] // Use email prefix as default name
+              }
+            }
+          });
+        }
+
+        if (result.error) throw result.error;
+        
+        if (authMode === 'signup' && !result.error) {
+          alert('Account created successfully! Please check your email to verify your account, then sign in.');
+          setAuthMode('signin');
+          setPassword('');
+        }
       }
     } catch (error) {
-      console.error('Error signing in:', error);
-      alert('Failed to sign in. Please try again.');
+      console.error('Auth error:', error);
+      alert(error.message || `Failed to ${authMode === 'signin' ? 'sign in' : 'sign up'}. Please try again.`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -639,7 +668,7 @@ Write the complete article:`;
             if (event === 'SIGNED_IN' && session?.user) {
               const user = { 
                 id: session.user.id, 
-                name: session.user.email || session.user.user_metadata?.name || 'User',
+                name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
                 email: session.user.email
               };
               setUser(user);
@@ -1483,26 +1512,82 @@ Write the complete article:`;
   // Show login page if user is not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
           <div className="bg-white rounded-lg shadow-sm border p-8">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <PenTool className="w-8 h-8 text-purple-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Inkridge</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Welcome to Inkridge</h1>
+            <p className="text-gray-600 mb-6 text-center">
               Your Creative Workflow Companion for documenting your AI journey.
-              Sign in with your Replit account to save your story seeds and generated content.
             </p>
-            <button
-              onClick={loginWithSupabase}
-              className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
-            >
-              <User className="w-5 h-5 mr-2" />
-              Log in with Google
-            </button>
-            <p className="text-xs text-gray-500 mt-4">
-              We use Supabase Auth with Google to securely authenticate your account. Your data is stored safely and only accessible to you.
+
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder={authMode === 'signin' ? 'Enter your password' : 'Create a password (min 6 characters)'}
+                  minLength={authMode === 'signup' ? 6 : undefined}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {authMode === 'signin' ? 'Signing In...' : 'Creating Account...'}
+                  </>
+                ) : (
+                  <>
+                    <User className="w-5 h-5 mr-2" />
+                    {authMode === 'signin' ? 'Sign In' : 'Create Account'}
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                  setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+                  setPassword('');
+                }}
+                className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+              >
+                {authMode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Your data is stored securely with Supabase and only accessible to you.
             </p>
           </div>
         </div>
@@ -1712,7 +1797,7 @@ Write the complete article:`;
                     <div className="px-4 py-2 border-b">
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
-                      <p className="text-xs text-gray-400">Signed in with Google</p>
+                      <p className="text-xs text-gray-400">Signed in with Supabase</p>
                     </div>
 
                     <button
