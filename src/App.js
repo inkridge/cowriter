@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send } from 'lucide-react';
+import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send, User, LogOut } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
@@ -16,6 +16,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
+  const [user, setUser] = useState(null);
   const [newSeed, setNewSeed] = useState({
     title: '',
     content: '',
@@ -51,15 +52,34 @@ function App() {
     }
   };
 
+  // Auth functions
+  const checkAuth = () => {
+    const userId = window.parent?.document?.querySelector('script[id="replit-user-id"]')?.textContent;
+    const userName = window.parent?.document?.querySelector('script[id="replit-user-name"]')?.textContent;
+    
+    if (userId && userName) {
+      setUser({ id: userId, name: userName });
+      return { id: userId, name: userName };
+    }
+    return null;
+  };
+
   // Supabase functions
   const loadSeeds = async () => {
     setIsLoading(true);
     try {
+      const currentUser = user || checkAuth();
+      if (!currentUser) {
+        setSeeds([]);
+        return;
+      }
+
       const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
           .from('seeds')
           .select('*')
+          .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -95,6 +115,9 @@ function App() {
 
   const saveSeedToSupabase = async (seedData) => {
     try {
+      const currentUser = user || checkAuth();
+      if (!currentUser) throw new Error('User not authenticated');
+
       const supabase = getSupabaseClient();
       if (supabase) {
         const { data, error } = await supabase
@@ -103,7 +126,9 @@ function App() {
             title: seedData.title,
             content: seedData.content,
             pillar: seedData.pillar,
-            status: 'captured'
+            status: 'captured',
+            user_id: currentUser.id,
+            user_name: currentUser.name
           }])
           .select()
           .single();
@@ -297,8 +322,17 @@ Format as clean markdown ready for Substack.`;
 
   // Load seeds from Supabase on app start
   useEffect(() => {
+    const currentUser = checkAuth();
+    setUser(currentUser);
     loadSeeds();
   }, []);
+
+  // Reload seeds when user changes
+  useEffect(() => {
+    if (user) {
+      loadSeeds();
+    }
+  }, [user]);
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -726,6 +760,20 @@ Format as clean markdown ready for Substack.`;
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-purple-600">Inkridge</h1>
               <span className="ml-2 text-sm text-gray-500">Creative Workflow Companion</span>
+            </div>
+            
+            {/* User Info */}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span>Hi, {user.name}!</span>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-600">
+                  Please log in to save your data
+                </div>
+              )}
             </div>
             
             <nav className="flex space-x-8">
