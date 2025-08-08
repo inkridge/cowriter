@@ -480,35 +480,37 @@ What would you tell someone else facing this?
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Role & Purpose
-You are Inkridge, a co-writer for a non-technical CEO documenting the messy middle of her AI journey.
+      const prompt = `You are generating Substack-ready article titles.
 
 Story Seed: "${seed.content}"
 Pillar: "${seed.pillar}"
 
-TITLE GENERATION RULES:
+For each seed, return 5 title options that are:
 
-1. Always include a hook + clear topic
-2. Make the reader know exactly what they will read about before they click
-3. Avoid generic phrases like "showing up every day" or "what I learned" without context
-4. Use one of four formats: "The Day…", "Why I…", tension question, or metaphor anchor
-5. Keep under 16 words
-6. Promise specificity: include the project, challenge, or context in the title
-7. Optimize for Substack browsing: the reader should instantly understand it's an AI/leadership build story, not a generic self-help post
+**Specific** — name the transformation, project, or turning point.
 
-REQUIRED FORMATS (use one for each title):
-- **"The Day…" format**: "The day our AI chatbot started giving financial advice"
-- **"Why I…" format**: "Why I stopped trusting our AI recommendations after one bad call"
-- **Tension question**: "What happens when your AI tool makes a $10k mistake?"
-- **Metaphor anchor**: "Building AI is like teaching a toddler to drive"
+**Clear** — make the reader know exactly what the post is about.
 
-EXAMPLES OF GOOD TITLES:
-- "The day I realized our AI wasn't actually intelligent" (12 words)
-- "Why I fired our entire AI consulting team" (8 words)
-- "What happens when ChatGPT runs your marketing campaign?" (8 words)
-- "Our AI hiring tool was more biased than humans" (9 words)
+**Curiosity-driven** — create tension, contrast, or an intriguing question.
 
-Generate exactly 3 titles using different formats. Each must be under 16 words and include the specific project/challenge from the seed.
+**Compact** — 12–16 words max.
+
+**Formats**: Include at least 1 "The Day…", 1 "Why I…", 1 tension question, 1 transformation statement, and 1 metaphor anchor.
+
+Avoid vague phrases like "what I learned" or "showing up every day" unless paired with a concrete context.
+
+Optimise for the Substack reading feed — the reader should instantly know it's an AI/leadership build journey, not generic self-help.
+
+Example Input: "What took me over the edge from non-tech CEO to app builder"
+
+Example Output:
+- The Day a Weekend AI Experiment Turned Me Into an App Builder
+- Why a Single AI Project Pushed This Non-Tech CEO Into Coding
+- From CEO to App Builder in 90 Days — The Push I Didn't See Coming
+- Can a Non-Tech CEO Build an App? Here's How I Crossed the Line
+- The Tipping Point That Made Me Go From Talking About AI to Building It
+
+Generate exactly 5 titles using the required formats. Each must be 12-16 words and include the specific project/challenge from the seed.
 
 Return only the titles, no explanations:`;
 
