@@ -868,23 +868,31 @@ Write the complete article:`;
               {selectedSeed.pillar}
             </span>
           </div>
-          <button
-            onClick={() => generateTitles(selectedSeed)}
-            disabled={isGenerating}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
-          >
-            {isGenerating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Generating...
-              </>
-            ) : (
-              <>
-                <Wand2 className="w-4 h-4 mr-2" />
-                Generate Titles
-              </>
-            )}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => generateTitles(selectedSeed)}
+              disabled={isGenerating}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Generate Titles
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => setSelectedSeed(null)}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Back to Seeds
+            </button>
+          </div>
         </div>
       )}
 
@@ -903,18 +911,29 @@ Write the complete article:`;
               </button>
             ))}
           </div>
-          <button
-            onClick={() => {
-              if (!isGenerating) {
+          <div className="flex justify-between">
+            <button
+              onClick={() => {
+                if (!isGenerating) {
+                  setGeneratedTitles([]);
+                  generateTitles(selectedSeed);
+                }
+              }}
+              disabled={isGenerating}
+              className="text-purple-600 hover:text-purple-800 text-sm disabled:opacity-50"
+            >
+              {isGenerating ? 'Generating...' : 'Generate Different Titles'}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedSeed(null);
                 setGeneratedTitles([]);
-                generateTitles(selectedSeed);
-              }
-            }}
-            disabled={isGenerating}
-            className="text-purple-600 hover:text-purple-800 text-sm disabled:opacity-50"
-          >
-            {isGenerating ? 'Generating...' : 'Generate Different Titles'}
-          </button>
+              }}
+              className="text-gray-600 hover:text-gray-800 text-sm"
+            >
+              Back to Seeds
+            </button>
+          </div>
         </div>
       )}
 
@@ -925,23 +944,35 @@ Write the complete article:`;
           <div className="bg-purple-50 rounded-lg p-4 mb-6">
             <h3 className="font-semibold text-purple-900">{selectedTitle}</h3>
           </div>
-          <button
-            onClick={() => generateQuestions(selectedSeed.pillar, selectedTitle, selectedSeed)}
-            disabled={isGenerating}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
-          >
-            {isGenerating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Generating...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Generate Development Questions
-              </>
-            )}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => generateQuestions(selectedSeed.pillar, selectedTitle, selectedSeed)}
+              disabled={isGenerating}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Generate Development Questions
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedSeed(null);
+                setGeneratedTitles([]);
+                setSelectedTitle('');
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Back to Seeds
+            </button>
+          </div>
         </div>
       )}
 
@@ -1001,7 +1032,7 @@ Write the complete article:`;
               {Object.values(selectedQuestions).filter(Boolean).length} of {pillarQuestions.length} questions selected
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={generateArticle}
                 disabled={isGenerating || Object.values(selectedQuestions).filter(Boolean).length === 0}
@@ -1029,6 +1060,19 @@ Write the complete article:`;
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 {isGenerating ? 'Generating...' : 'Try Different Questions'}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedSeed(null);
+                  setGeneratedTitles([]);
+                  setSelectedTitle('');
+                  setPillarQuestions([]);
+                  setSelectedQuestions({});
+                  setAnswers({});
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Back to Seeds
               </button>
             </div>
           </div>
