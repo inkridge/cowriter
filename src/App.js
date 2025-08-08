@@ -13,6 +13,7 @@ function App() {
   const [generatedTitles, setGeneratedTitles] = useState([]);
   const [selectedTitle, setSelectedTitle] = useState('');
   const [pillarQuestions, setPillarQuestions] = useState([]);
+  const [selectedQuestions, setSelectedQuestions] = useState({}); // Added state for selected questions
   const [answers, setAnswers] = useState({});
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -371,6 +372,7 @@ Return only the 5 questions, one per line, no numbers.`;
     setIsGenerating(true);
     try {
       const answersText = Object.entries(answers)
+        .filter(([question]) => selectedQuestions[question]) // Only include answers for selected questions
         .map(([question, answer]) => `Q: ${question}\nA: ${answer}`)
         .join('\n\n');
 
@@ -748,53 +750,88 @@ Format as clean markdown ready for Substack.`;
       {/* Q&A Development */}
       {pillarQuestions.length > 0 && !generatedContent && (
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Answer These Questions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Choose & Answer Questions</h2>
+          <p className="text-sm text-gray-600 mb-6">Select the questions you want to answer for your article. You can skip any that don't feel relevant.</p>
+
           <div className="space-y-6">
             {pillarQuestions.map((question, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {question}
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  value={answers[question] || ''}
-                  onChange={(e) => setAnswers(prev => ({
-                    ...prev,
-                    [question]: e.target.value
-                  }))}
-                  placeholder="Share your thoughts, experiences, and insights..."
-                />
+              <div key={index} className={`border rounded-lg p-4 transition-colors ${selectedQuestions[question] ? 'border-purple-200 bg-purple-50' : 'border-gray-200 bg-gray-50'}`}>
+                <div className="flex items-start space-x-3 mb-3">
+                  <input
+                    type="checkbox"
+                    id={`question-${index}`}
+                    checked={selectedQuestions[question] || false}
+                    onChange={(e) => {
+                      setSelectedQuestions(prev => ({
+                        ...prev,
+                        [question]: e.target.checked
+                      }));
+                      // Clear answer if question is deselected
+                      if (!e.target.checked) {
+                        setAnswers(prev => {
+                          const newAnswers = { ...prev };
+                          delete newAnswers[question];
+                          return newAnswers;
+                        });
+                      }
+                    }}
+                    className="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  />
+                  <label htmlFor={`question-${index}`} className="block text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                    {question}
+                  </label>
+                </div>
+
+                {selectedQuestions[question] && (
+                  <textarea
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ml-7"
+                    value={answers[question] || ''}
+                    onChange={(e) => setAnswers(prev => ({
+                      ...prev,
+                      [question]: e.target.value
+                    }))}
+                    placeholder="Share your thoughts, experiences, and insights..."
+                  />
+                )}
               </div>
             ))}
           </div>
-          <div className="mt-6 flex space-x-3">
-            <button
-              onClick={generateArticle}
-              disabled={isGenerating || Object.keys(answers).length === 0}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Generating Article...
-                </>
-              ) : (
-                <>
-                  <PenTool className="w-4 h-4 mr-2" />
-                  Generate Article
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setPillarQuestions([]);
-                setAnswers({});
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Try Different Questions
-            </button>
+
+          <div className="mt-6 flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {Object.values(selectedQuestions).filter(Boolean).length} of {pillarQuestions.length} questions selected
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={generateArticle}
+                disabled={isGenerating || Object.values(selectedQuestions).filter(Boolean).length === 0}
+                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Generating Article...
+                  </>
+                ) : (
+                  <>
+                    <PenTool className="w-4 h-4 mr-2" />
+                    Generate Article
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setPillarQuestions([]);
+                  setSelectedQuestions({});
+                  setAnswers({});
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Try Different Questions
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -817,6 +854,7 @@ Format as clean markdown ready for Substack.`;
                 setSelectedTitle('');
                 setPillarQuestions([]);
                 setAnswers({});
+                setSelectedQuestions({}); // Reset selected questions
                 setGeneratedContent('');
               }}
               className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -830,6 +868,7 @@ Format as clean markdown ready for Substack.`;
                 setSelectedTitle('');
                 setPillarQuestions([]);
                 setAnswers({});
+                setSelectedQuestions({}); // Reset selected questions
                 setGeneratedContent('');
               }}
               className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
@@ -974,7 +1013,7 @@ Format as clean markdown ready for Substack.`;
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-gray-50"
       onClick={(e) => {
         if (!e.target.closest('.relative')) {
@@ -1012,7 +1051,7 @@ Format as clean markdown ready for Substack.`;
                     <p className="text-sm font-medium text-gray-900">{user.name}</p>
                     <p className="text-xs text-gray-500">Signed in with Replit</p>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       logout();
@@ -1117,6 +1156,7 @@ Format as clean markdown ready for Substack.`;
                   setSelectedTitle('');
                   setPillarQuestions([]);
                   setAnswers({});
+                  setSelectedQuestions({}); // Reset selected questions
                   setGeneratedContent('');
                   setCurrentView('cowriter');
                   setShowActionMenu(false);
