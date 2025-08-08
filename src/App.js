@@ -1,10 +1,147 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, BookOpen, PenTool, BarChart3, Sprout } from 'lucide-react';
+import { Plus, BookOpen, PenTool, BarChart3, Sprout, Wand2, Send } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [seeds, setSeeds] = useState([]);
+  const [selectedSeed, setSelectedSeed] = useState(null);
+  const [generatedTitles, setGeneratedTitles] = useState([]);
+  const [selectedTitle, setSelectedTitle] = useState('');
+  const [pillarQuestions, setPillarQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+
+  // Initialize Gemini AI
+  const initializeAI = () => {
+    if (!apiKey) return null;
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      return genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    } catch (error) {
+      console.error('Error initializing Gemini:', error);
+      return null;
+    }
+  };
+
+  // Generate titles using Gemini
+  const generateTitles = async (seed) => {
+    const model = initializeAI();
+    if (!model) return [];
+
+    setIsGenerating(true);
+    try {
+      const prompt = `Based on this story seed: "${seed.content}"
+      
+Content Pillar: ${seed.pillar}
+
+Generate 3 compelling, click-worthy titles for a Substack post. Make them:
+- Authentic and vulnerable 
+- Specific to the AI/leadership context
+- Between 6-12 words
+- Engaging without being clickbait
+
+Return only the 3 titles, one per line, no numbers or bullets.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const titles = response.text().split('\n').filter(title => title.trim());
+      
+      setGeneratedTitles(titles);
+      return titles;
+    } catch (error) {
+      console.error('Error generating titles:', error);
+      return [];
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Generate pillar-specific questions
+  const generateQuestions = async (pillar, title, seed) => {
+    const model = initializeAI();
+    if (!model) return [];
+
+    setIsGenerating(true);
+    try {
+      const pillarPrompts = {
+        'Build Log': 'Focus on technical challenges, solutions found, and practical lessons learned.',
+        'Leadership Lens': 'Focus on team dynamics, decision-making, and organizational impact.',
+        'Meta-Skill': 'Focus on universal skills, mindset shifts, and transferable insights.',
+        'Field Note': 'Focus on observations, patterns, and emerging trends.'
+      };
+
+      const prompt = `For a ${pillar} post titled "${title}" based on this seed: "${seed.content}"
+
+${pillarPrompts[pillar]}
+
+Generate 5 specific questions that will help the author develop this into a compelling 600-800 word Substack post. Questions should:
+- Draw out concrete details and examples
+- Encourage vulnerability and authenticity  
+- Help connect to broader leadership/AI themes
+- Build a narrative arc
+
+Return only the 5 questions, one per line, no numbers.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const questions = response.text().split('\n').filter(q => q.trim());
+      
+      setPillarQuestions(questions);
+      return questions;
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      return [];
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Generate complete article
+  const generateArticle = async () => {
+    const model = initializeAI();
+    if (!model) return '';
+
+    setIsGenerating(true);
+    try {
+      const answersText = Object.entries(answers)
+        .map(([question, answer]) => `Q: ${question}\nA: ${answer}`)
+        .join('\n\n');
+
+      const prompt = `Write a compelling 600-800 word Substack post with this information:
+
+Title: ${selectedTitle}
+Content Pillar: ${selectedSeed.pillar}
+Original Seed: ${selectedSeed.content}
+
+Author's responses to key questions:
+${answersText}
+
+Write in a conversational, authentic tone that:
+- Starts with a hook that draws readers in
+- Shares vulnerable, real moments
+- Provides actionable insights
+- Connects AI/tech topics to broader leadership themes
+- Ends with a thought-provoking question for engagement
+
+Format as clean markdown ready for Substack.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const content = response.text();
+      
+      setGeneratedContent(content);
+      return content;
+    } catch (error) {
+      console.error('Error generating article:', error);
+      return '';
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Sample data for demonstration
   useEffect(() => {
@@ -166,21 +303,251 @@ function App() {
   );
 
   const renderCoWriter = () => (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">AI Co-Writer</h2>
-        <div className="text-center py-12">
-          <PenTool className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Write</h3>
-          <p className="text-gray-600 mb-6">Select a seed to start the co-writing process</p>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* API Key Setup */}
+      {!apiKey && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center mb-3">
+            <Wand2 className="w-5 h-5 text-yellow-600 mr-2" />
+            <h3 className="text-lg font-medium text-yellow-800">Setup Gemini AI</h3>
+          </div>
+          <p className="text-yellow-700 mb-4">Enter your Google AI API key to start co-writing:</p>
+          <div className="flex space-x-3">
+            <input
+              type="password"
+              placeholder="Enter your Gemini API key..."
+              className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            <a 
+              href="https://aistudio.google.com/app/apikey" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+            >
+              Get API Key
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Seed Selection */}
+      {apiKey && !selectedSeed && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Choose a Seed to Develop</h2>
+          {seeds.length === 0 ? (
+            <div className="text-center py-8">
+              <Sprout className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No seeds available. Create some first!</p>
+              <button
+                onClick={() => setCurrentView('capture')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Capture Seeds
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {seeds.map((seed) => (
+                <div 
+                  key={seed.id}
+                  className="border rounded-lg p-4 hover:bg-purple-50 cursor-pointer transition-colors"
+                  onClick={() => setSelectedSeed(seed)}
+                >
+                  <h3 className="font-medium text-gray-900">{seed.title}</h3>
+                  <p className="text-gray-600 text-sm mt-1">{seed.content}</p>
+                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded mt-2 inline-block">
+                    {seed.pillar}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Title Generation */}
+      {selectedSeed && generatedTitles.length === 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Generate Titles</h2>
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-gray-900">{selectedSeed.title}</h3>
+            <p className="text-gray-600 text-sm mt-1">{selectedSeed.content}</p>
+            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded mt-2 inline-block">
+              {selectedSeed.pillar}
+            </span>
+          </div>
           <button
-            onClick={() => setCurrentView('dashboard')}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            onClick={() => generateTitles(selectedSeed)}
+            disabled={isGenerating}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
           >
-            Choose a Seed
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-4 h-4 mr-2" />
+                Generate Titles
+              </>
+            )}
           </button>
         </div>
-      </div>
+      )}
+
+      {/* Title Selection */}
+      {generatedTitles.length > 0 && !selectedTitle && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Choose Your Title</h2>
+          <div className="space-y-3 mb-6">
+            {generatedTitles.map((title, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedTitle(title)}
+                className="w-full text-left p-4 border rounded-lg hover:bg-purple-50 hover:border-purple-200 transition-colors"
+              >
+                {title}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setGeneratedTitles([]);
+              generateTitles(selectedSeed);
+            }}
+            className="text-purple-600 hover:text-purple-800 text-sm"
+          >
+            Generate Different Titles
+          </button>
+        </div>
+      )}
+
+      {/* Question Generation */}
+      {selectedTitle && pillarQuestions.length === 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Develop Your Story</h2>
+          <div className="bg-purple-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-purple-900">{selectedTitle}</h3>
+          </div>
+          <button
+            onClick={() => generateQuestions(selectedSeed.pillar, selectedTitle, selectedSeed)}
+            disabled={isGenerating}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                Generate Development Questions
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Q&A Development */}
+      {pillarQuestions.length > 0 && !generatedContent && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Answer These Questions</h2>
+          <div className="space-y-6">
+            {pillarQuestions.map((question, index) => (
+              <div key={index}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {question}
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={answers[question] || ''}
+                  onChange={(e) => setAnswers(prev => ({
+                    ...prev,
+                    [question]: e.target.value
+                  }))}
+                  placeholder="Share your thoughts, experiences, and insights..."
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex space-x-3">
+            <button
+              onClick={generateArticle}
+              disabled={isGenerating || Object.keys(answers).length === 0}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Generating Article...
+                </>
+              ) : (
+                <>
+                  <PenTool className="w-4 h-4 mr-2" />
+                  Generate Article
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setPillarQuestions([]);
+                setAnswers({});
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Try Different Questions
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Generated Content */}
+      {generatedContent && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Your Substack Article</h2>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(generatedContent);
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              Copy to Clipboard
+            </button>
+          </div>
+          <div className="prose max-w-none bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
+            <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+              {generatedContent}
+            </pre>
+          </div>
+          <div className="mt-6 flex space-x-3">
+            <button
+              onClick={() => {
+                setSelectedSeed(null);
+                setGeneratedTitles([]);
+                setSelectedTitle('');
+                setPillarQuestions([]);
+                setAnswers({});
+                setGeneratedContent('');
+              }}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Start New Article
+            </button>
+            <button
+              onClick={generateArticle}
+              disabled={isGenerating}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Regenerate Article
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
